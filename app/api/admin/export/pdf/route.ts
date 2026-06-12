@@ -3,6 +3,11 @@ import { getAdminFromRequest } from '@/lib/adminAuth';
 import { getExportRows, EXPORT_HEADER } from '@/lib/exportData';
 import PDFDocument from 'pdfkit';
 
+// toLocaleString('fr') uses narrow no-break spaces (U+202F) as thousands
+// separators — Helvetica (WinAnsi) can't encode them, pdfkit renders "/".
+// Replace any unicode space with a plain ASCII space.
+const pdfSafe = (s: string) => s.replace(/[\u00A0\u202F\u2009]/g, ' ');
+
 export async function GET(req: NextRequest) {
   if (!await getAdminFromRequest())
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -29,7 +34,7 @@ export async function GET(req: NextRequest) {
   doc.fillColor('#C8102E').font('Helvetica-Bold').fontSize(16)
     .text('Jotun Tamboola — Participants', X0, 30);
   doc.fillColor('#6B7280').font('Helvetica').fontSize(9)
-    .text(`Exporté le ${new Date().toLocaleString('fr-DZ')} — ${rows.length} participant(s)`, X0, 50);
+    .text(pdfSafe(`Exporté le ${new Date().toLocaleString('fr-DZ')} — ${rows.length} participant(s)`), X0, 50);
 
   let y = drawHeader(68);
   doc.font('Helvetica').fontSize(7.5);
@@ -43,7 +48,7 @@ export async function GET(req: NextRequest) {
       const statusColors: Record<string, string> = { approved: '#15803D', pending: '#B45309', rejected: '#B91C1C' };
       doc.fillColor(isStatus ? (statusColors[String(cell)] ?? '#111827') : '#111827');
       if (isStatus) doc.font('Helvetica-Bold'); 
-      const text = i === 7 && typeof cell === 'number' ? `${cell.toLocaleString('fr-DZ')} DA` : String(cell);
+      const text = pdfSafe(i === 7 && typeof cell === 'number' ? `${cell.toLocaleString('fr-DZ')} DA` : String(cell));
       doc.text(text, x + 3, y + 3.5, { width: COLS[i] - 6, lineBreak: false, ellipsis: true });
       if (isStatus) doc.font('Helvetica');
       x += COLS[i];
