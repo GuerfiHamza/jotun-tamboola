@@ -13,9 +13,9 @@ const prizes = [
     badge: 'GRAND PRIX', color: '#fbbf24',
     icon: (
       <svg viewBox="0 0 32 32" fill="none" className="w-7 h-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="5" width="26" height="18" rx="2"/>
-        <path d="M10 27h12M16 23v4"/>
-        <rect x="6" y="8" width="20" height="12" rx="1" fill="currentColor" opacity="0.12"/>
+        <rect x="3" y="5" width="26" height="18" rx="2" />
+        <path d="M10 27h12M16 23v4" />
+        <rect x="6" y="8" width="20" height="12" rx="1" fill="currentColor" opacity="0.12" />
       </svg>
     ),
   },
@@ -26,8 +26,8 @@ const prizes = [
     color: '#94a3b8',
     icon: (
       <svg viewBox="0 0 32 32" fill="none" className="w-7 h-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="7" y="2" width="18" height="28" rx="2"/>
-        <path d="M7 14h18M13 8v4M13 19v6"/>
+        <rect x="7" y="2" width="18" height="28" rx="2" />
+        <path d="M7 14h18M13 8v4M13 19v6" />
       </svg>
     ),
   },
@@ -38,11 +38,11 @@ const prizes = [
     color: '#f97316',
     icon: (
       <svg viewBox="0 0 32 32" fill="none" className="w-7 h-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="2" width="26" height="28" rx="2"/>
-        <circle cx="16" cy="18" r="7"/>
-        <circle cx="16" cy="18" r="3" fill="currentColor" opacity="0.12"/>
-        <circle cx="9" cy="7" r="1.5" fill="currentColor"/>
-        <circle cx="14" cy="7" r="1.5" fill="currentColor"/>
+        <rect x="3" y="2" width="26" height="28" rx="2" />
+        <circle cx="16" cy="18" r="7" />
+        <circle cx="16" cy="18" r="3" fill="currentColor" opacity="0.12" />
+        <circle cx="9" cy="7" r="1.5" fill="currentColor" />
+        <circle cx="14" cy="7" r="1.5" fill="currentColor" />
       </svg>
     ),
   },
@@ -53,8 +53,8 @@ const prizes = [
     color: '#3b82f6',
     icon: (
       <svg viewBox="0 0 32 32" fill="none" className="w-7 h-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="9" width="26" height="11" rx="2"/>
-        <path d="M8 24c0 3 1 4 1 4M16 24v5M24 24c0 3-1 4-1 4M8 14h16M10 12h2"/>
+        <rect x="3" y="9" width="26" height="11" rx="2" />
+        <path d="M8 24c0 3 1 4 1 4M16 24v5M24 24c0 3-1 4-1 4M8 14h16M10 12h2" />
       </svg>
     ),
   },
@@ -65,9 +65,9 @@ const prizes = [
     color: '#8b5cf6',
     icon: (
       <svg viewBox="0 0 32 32" fill="none" className="w-7 h-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <ellipse cx="16" cy="24" rx="10" ry="5"/>
-        <path d="M16 19V7M10 7h12M9 19c-3-2-3-6 0-8"/>
-        <circle cx="16" cy="24" r="3" fill="currentColor" opacity="0.15"/>
+        <ellipse cx="16" cy="24" rx="10" ry="5" />
+        <path d="M16 19V7M10 7h12M9 19c-3-2-3-6 0-8" />
+        <circle cx="16" cy="24" r="3" fill="currentColor" opacity="0.15" />
       </svg>
     ),
   },
@@ -78,49 +78,49 @@ const prizes = [
     color: '#10b981',
     icon: (
       <svg viewBox="0 0 32 32" fill="none" className="w-7 h-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="5" y="14" width="22" height="14" rx="2"/>
-        <rect x="3" y="10" width="26" height="6" rx="1"/>
-        <path d="M16 10V5M12 5h8"/>
+        <rect x="5" y="14" width="22" height="14" rx="2" />
+        <rect x="3" y="10" width="26" height="6" rx="1" />
+        <path d="M16 10V5M12 5h8" />
       </svg>
     ),
   },
 ];
 
 const howSteps = [
-  { n: '01', title: 'Inscrivez-vous',       sub: 'Remplissez le formulaire en quelques minutes avec vos informations.' },
+  { n: '01', title: 'Inscrivez-vous', sub: 'Remplissez le formulaire en quelques minutes avec vos informations.' },
   { n: '02', title: 'Soumettez une facture', sub: 'Les peintres uploadent une facture Jotun ≥ 20 000 DA pour valider.' },
   { n: '03', title: 'Entrez dans le tirage', sub: 'Votre dossier est validé et vous participez automatiquement.' },
-  { n: '04', title: 'Gagnez un prix',        sub: "Les gagnants sont contactés directement par l'équipe Jotun." },
+  { n: '04', title: 'Gagnez un prix', sub: "Les gagnants sont contactés directement par l'équipe Jotun." },
 ];
 
 const faqs = [
-  { q: 'Qui peut participer ?',                 a: "Tout acheteur de produits Jotun en Algérie. Les peintres en bâtiment doivent fournir une facture justificative." },
-  { q: 'Quelle est la date limite ?',           a: "Les inscriptions sont ouvertes jusqu'à la fin de la campagne. Le tirage au sort sera annoncé sur nos canaux officiels." },
-  { q: "Comment saurai-je si j'ai gagné ?",     a: "L'équipe Jotun vous contactera directement par téléphone au numéro fourni lors de l'inscription." },
+  { q: 'Qui peut participer ?', a: "Tout acheteur de produits Jotun en Algérie. Les peintres en bâtiment doivent fournir une facture justificative." },
+  { q: 'Quelle est la date limite ?', a: "Les inscriptions sont ouvertes jusqu'à la fin de la campagne. Le tirage au sort sera annoncé sur nos canaux officiels." },
+  { q: "Comment saurai-je si j'ai gagné ?", a: "L'équipe Jotun vous contactera directement par téléphone au numéro fourni lors de l'inscription." },
   { q: 'Puis-je soumettre plusieurs factures ?', a: "Oui, les peintres peuvent soumettre plusieurs factures. Seule la facture acceptée (≥ 20 000 DA) compte pour la participation." },
 ];
 
 const WILAYAS = [
-  'Adrar','Chlef','Laghouat','Oum El Bouaghi','Batna','Béjaïa','Biskra','Béchar',
-  'Blida','Bouira','Tamanrasset','Tébessa','Tlemcen','Tiaret','Tizi Ouzou','Alger',
-  'Djelfa','Jijel','Sétif','Saïda','Skikda','Sidi Bel Abbès','Annaba','Guelma',
-  'Constantine','Médéa','Mostaganem',"M'Sila",'Mascara','Ouargla','Oran','El Bayadh',
-  'Illizi','Bordj Bou Arréridj','Boumerdès','El Tarf','Tindouf','Tissemsilt',
-  'El Oued','Khenchela','Souk Ahras','Tipaza','Mila','Aïn Defla','Naâma',
-  'Aïn Témouchent','Ghardaïa','Relizane','Timimoun','Bordj Badji Mokhtar',
-  'Ouled Djellal','Béni Abbès','In Salah','In Guezzam','Touggourt','Djanet',
-  "El M'Ghair",'El Meniaa',
+  'Adrar', 'Chlef', 'Laghouat', 'Oum El Bouaghi', 'Batna', 'Béjaïa', 'Biskra', 'Béchar',
+  'Blida', 'Bouira', 'Tamanrasset', 'Tébessa', 'Tlemcen', 'Tiaret', 'Tizi Ouzou', 'Alger',
+  'Djelfa', 'Jijel', 'Sétif', 'Saïda', 'Skikda', 'Sidi Bel Abbès', 'Annaba', 'Guelma',
+  'Constantine', 'Médéa', 'Mostaganem', "M'Sila", 'Mascara', 'Ouargla', 'Oran', 'El Bayadh',
+  'Illizi', 'Bordj Bou Arréridj', 'Boumerdès', 'El Tarf', 'Tindouf', 'Tissemsilt',
+  'El Oued', 'Khenchela', 'Souk Ahras', 'Tipaza', 'Mila', 'Aïn Defla', 'Naâma',
+  'Aïn Témouchent', 'Ghardaïa', 'Relizane', 'Timimoun', 'Bordj Badji Mokhtar',
+  'Ouled Djellal', 'Béni Abbès', 'In Salah', 'In Guezzam', 'Touggourt', 'Djanet',
+  "El M'Ghair", 'El Meniaa',
 ];
 
 // ── Star field data (module-level so Math.random runs once, not on render) ───
 
 const STARS = Array.from({ length: 55 }, (_, i) => ({
   id: i,
-  x:     Math.random() * 100,
-  y:     Math.random() * 100,
-  size:  Math.random() * 1.8 + 0.6,
+  x: Math.random() * 100,
+  y: Math.random() * 100,
+  size: Math.random() * 1.8 + 0.6,
   delay: Math.random() * 6,
-  dur:   2.5 + Math.random() * 4,
+  dur: 2.5 + Math.random() * 4,
 }));
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -135,66 +135,66 @@ type Step = 'form' | 'done';
 
 function getTheme(dark: boolean) {
   if (dark) return {
-    page:        '#08080f',
-    section:     '#0a0a14',
-    card:        '#0f0f1c',
-    cardAlt:     '#12121f',
-    glass:       'rgba(255,255,255,0.04)',
-    glassHard:   'rgba(255,255,255,0.07)',
-    input:       'rgba(255,255,255,0.05)',
-    inputFocus:  'rgba(255,255,255,0.08)',
-    border:      'rgba(255,255,255,0.07)',
-    borderSub:   'rgba(255,255,255,0.05)',
+    page: '#08080f',
+    section: '#0a0a14',
+    card: '#0f0f1c',
+    cardAlt: '#12121f',
+    glass: 'rgba(255,255,255,0.04)',
+    glassHard: 'rgba(255,255,255,0.07)',
+    input: 'rgba(255,255,255,0.05)',
+    inputFocus: 'rgba(255,255,255,0.08)',
+    border: 'rgba(255,255,255,0.07)',
+    borderSub: 'rgba(255,255,255,0.05)',
     borderFocus: 'rgba(239,68,68,0.45)',
-    text:        '#f9fafb',
-    sub:         'rgba(255,255,255,0.55)',
-    muted:       'rgba(255,255,255,0.35)',
-    faint:       'rgba(255,255,255,0.15)',
-    navBg:       'rgba(8,8,15,0.92)',
-    navBorder:   'rgba(255,255,255,0.06)',
-    foot:        '#060609',
-    inputText:   '#ffffff',
+    text: '#f9fafb',
+    sub: 'rgba(255,255,255,0.55)',
+    muted: 'rgba(255,255,255,0.35)',
+    faint: 'rgba(255,255,255,0.15)',
+    navBg: 'rgba(8,8,15,0.92)',
+    navBorder: 'rgba(255,255,255,0.06)',
+    foot: '#060609',
+    inputText: '#ffffff',
     placeholder: 'rgba(255,255,255,0.2)',
-    selectBg:    '#0f0f1c',
-    pill:        'rgba(255,255,255,0.04)',
-    orbA:        'rgba(239,68,68,0.08)',
-    orbB:        'rgba(239,68,68,0.05)',
-    orbC:        'rgba(245,158,11,0.04)',
-    gridLine:    'rgba(255,255,255,0.025)',
-    ringA:       'rgba(255,255,255,0.025)',
-    ringB:       'rgba(255,255,255,0.015)',
-    isDark:      true,
+    selectBg: '#0f0f1c',
+    pill: 'rgba(255,255,255,0.04)',
+    orbA: 'rgba(239,68,68,0.08)',
+    orbB: 'rgba(239,68,68,0.05)',
+    orbC: 'rgba(245,158,11,0.04)',
+    gridLine: 'rgba(255,255,255,0.025)',
+    ringA: 'rgba(255,255,255,0.025)',
+    ringB: 'rgba(255,255,255,0.015)',
+    isDark: true,
   } as const;
   return {
-    page:        '#f3f3fa',
-    section:     '#ebebf5',
-    card:        '#ffffff',
-    cardAlt:     '#f8f8fd',
-    glass:       'rgba(0,0,0,0.025)',
-    glassHard:   'rgba(0,0,0,0.06)',
-    input:       'rgba(0,0,0,0.04)',
-    inputFocus:  'rgba(0,0,0,0.07)',
-    border:      'rgba(0,0,0,0.09)',
-    borderSub:   'rgba(0,0,0,0.05)',
+    page: '#f3f3fa',
+    section: '#ebebf5',
+    card: '#ffffff',
+    cardAlt: '#f8f8fd',
+    glass: 'rgba(0,0,0,0.025)',
+    glassHard: 'rgba(0,0,0,0.06)',
+    input: 'rgba(0,0,0,0.04)',
+    inputFocus: 'rgba(0,0,0,0.07)',
+    border: 'rgba(0,0,0,0.09)',
+    borderSub: 'rgba(0,0,0,0.05)',
     borderFocus: 'rgba(239,68,68,0.5)',
-    text:        '#0d0d1a',
-    sub:         'rgba(0,0,0,0.6)',
-    muted:       'rgba(0,0,0,0.4)',
-    faint:       'rgba(0,0,0,0.2)',
-    navBg:       'rgba(243,243,250,0.95)',
-    navBorder:   'rgba(0,0,0,0.08)',
-    foot:        '#e6e6f2',
-    inputText:   '#0d0d1a',
+    text: '#0d0d1a',
+    sub: 'rgba(0,0,0,0.6)',
+    muted: 'rgba(0,0,0,0.4)',
+    faint: 'rgba(0,0,0,0.2)',
+    navBg: 'rgba(243,243,250,0.95)',
+    navBorder: 'rgba(0,0,0,0.08)',
+    foot: '#e6e6f2',
+    inputText: '#0d0d1a',
     placeholder: 'rgba(0,0,0,0.3)',
-    selectBg:    '#ffffff',
-    pill:        'rgba(0,0,0,0.03)',
-    orbA:        'rgba(239,68,68,0.06)',
-    orbB:        'rgba(239,68,68,0.04)',
-    orbC:        'rgba(245,158,11,0.03)',
-    gridLine:    'rgba(0,0,0,0.04)',
-    ringA:       'rgba(0,0,0,0.04)',
-    ringB:       'rgba(0,0,0,0.025)',
-    isDark:      false,
+    selectBg: '#ffffff',
+    pill: 'rgba(0,0,0,0.03)',
+    orbA: 'rgba(239,68,68,0.06)',
+    orbB: 'rgba(239,68,68,0.04)',
+    orbC: 'rgba(245,158,11,0.03)',
+    gridLine: 'rgba(0,0,0,0.04)',
+    ringA: 'rgba(0,0,0,0.04)',
+    ringB: 'rgba(0,0,0,0.025)',
+    isDark: false,
   } as const;
 }
 
@@ -218,8 +218,8 @@ function useInView(threshold = 0.12) {
 
 function reveal(visible: boolean, delay = 0, x = 0): React.CSSProperties {
   return {
-    opacity:    visible ? 1 : 0,
-    transform:  visible ? 'translateY(0px) translateX(0px)' : `translateY(36px) translateX(${x}px)`,
+    opacity: visible ? 1 : 0,
+    transform: visible ? 'translateY(0px) translateX(0px)' : `translateY(36px) translateX(${x}px)`,
     transition: `opacity 0.65s ease ${delay}ms, transform 0.65s ease ${delay}ms`,
   };
 }
@@ -305,8 +305,8 @@ function PrizeCard({ p, index, visible, th }: { p: typeof prizes[0]; index: numb
   function onMove(e: React.MouseEvent) {
     const el = cardRef.current; if (!el) return;
     const r = el.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width  - 0.5;
-    const y = (e.clientY - r.top)  / r.height - 0.5;
+    const x = (e.clientX - r.left) / r.width - 0.5;
+    const y = (e.clientY - r.top) / r.height - 0.5;
     el.style.transform = `perspective(900px) rotateX(${-y * 11}deg) rotateY(${x * 11}deg) translateY(-6px) scale(1.02)`;
     el.style.transition = 'transform 0.08s ease';
   }
@@ -469,12 +469,12 @@ function ThemeToggle({ dark, onToggle }: { dark: boolean; onToggle: () => void }
       <div style={{ animation: 'themeSwitch 0.4s ease both' }} key={dark ? 'moon' : 'sun'}>
         {dark ? (
           <svg className="w-4.5 h-4.5 text-amber-300" style={{ width: 18, height: 18 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z" />
           </svg>
         ) : (
           <svg className="w-4.5 h-4.5 text-amber-500" style={{ width: 18, height: 18 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="4"/>
-            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
           </svg>
         )}
       </div>
@@ -485,22 +485,22 @@ function ThemeToggle({ dark, onToggle }: { dark: boolean; onToggle: () => void }
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
-  const formRef   = useRef<HTMLDivElement>(null);
-  const [form, setForm]     = useState<FormState>({ full_name: '', phone: '', wilaya: '', is_painter: false, consent: false, invoice: null });
-  const [step,         setStep]         = useState<Step>('form');
-  const [errorMsg,     setErrorMsg]     = useState('');
-  const [loading,      setLoading]      = useState(false);
+  const formRef = useRef<HTMLDivElement>(null);
+  const [form, setForm] = useState<FormState>({ full_name: '', phone: '', wilaya: '', is_painter: false, consent: false, invoice: null });
+  const [step, setStep] = useState<Step>('form');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
   const [uploadResult, setUploadResult] = useState<{ accepted: boolean; message: string } | null>(null);
-  const [scrolled,     setScrolled]     = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [dark, setDark] = useState<boolean>(
     () => typeof window === 'undefined' || localStorage.getItem('jotun-theme') !== 'light'
   );
 
-  const { ref: prizesRef,    visible: prizesVisible    } = useInView();
-  const { ref: stepsRef,     visible: stepsVisible     } = useInView();
-  const { ref: faqRef,       visible: faqVisible       } = useInView();
+  const { ref: prizesRef, visible: prizesVisible } = useInView();
+  const { ref: stepsRef, visible: stepsVisible } = useInView();
+  const { ref: faqRef, visible: faqVisible } = useInView();
   const { ref: formTitleRef, visible: formTitleVisible } = useInView();
-  const { ref: statsRef,     visible: statsVisible     } = useInView();
+  const { ref: statsRef, visible: statsVisible } = useInView();
 
   const th = getTheme(dark);
 
@@ -527,14 +527,14 @@ export default function LandingPage() {
     e.preventDefault();
     setErrorMsg('');
     if (!form.full_name.trim()) { setErrorMsg('Veuillez entrer votre nom complet.'); return; }
-    if (!form.phone.trim())     { setErrorMsg('Veuillez entrer votre numéro de téléphone.'); return; }
+    if (!form.phone.trim()) { setErrorMsg('Veuillez entrer votre numéro de téléphone.'); return; }
     let phone = form.phone.replace(/[\s.-]/g, '');
-    if (phone.startsWith('+213'))    phone = phone.slice(4);
+    if (phone.startsWith('+213')) phone = phone.slice(4);
     else if (phone.startsWith('00213')) phone = phone.slice(5);
     if (phone.startsWith('0') && phone.length === 11) phone = phone.slice(1);
     if (/^[2-7]\d{8}$/.test(phone)) phone = '0' + phone;
     if (!/^0[2-7]\d{8}$/.test(phone)) { setErrorMsg('Numéro de téléphone algérien invalide (ex : 0550123456 ou +213550123456).'); return; }
-    if (!form.wilaya)  { setErrorMsg('Veuillez sélectionner votre wilaya.'); return; }
+    if (!form.wilaya) { setErrorMsg('Veuillez sélectionner votre wilaya.'); return; }
     if (form.is_painter && !form.invoice) { setErrorMsg('Veuillez joindre votre facture Jotun.'); return; }
     if (!form.consent) { setErrorMsg('Veuillez accepter les conditions de participation.'); return; }
     if (!form.invoice) { setErrorMsg('Veuillez joindre votre facture Jotun.'); return; }
@@ -544,11 +544,11 @@ export default function LandingPage() {
       if (form.invoice) {
         const checkFd = new FormData();
         checkFd.append('invoice', form.invoice);
-        const checkRes  = await fetch('/api/check-invoice', { method: 'POST', headers: { 'x-requested-with': 'XMLHttpRequest' }, body: checkFd });
+        const checkRes = await fetch('/api/check-invoice', { method: 'POST', headers: { 'x-requested-with': 'XMLHttpRequest' }, body: checkFd });
         const checkData = await checkRes.json() as { error?: string; ok?: boolean };
         if (!checkRes.ok) { setErrorMsg(checkData.error ?? "Cette facture ne peut pas être acceptée."); setLoading(false); return; }
       }
-      const regRes  = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-requested-with': 'XMLHttpRequest' }, body: JSON.stringify({ full_name: form.full_name.trim(), phone, wilaya: form.wilaya, is_painter: form.is_painter }) });
+      const regRes = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-requested-with': 'XMLHttpRequest' }, body: JSON.stringify({ full_name: form.full_name.trim(), phone, wilaya: form.wilaya, is_painter: form.is_painter }) });
       const regData = await regRes.json() as { error?: string; participantId?: number; requiresInvoice?: boolean; alreadyRegistered?: boolean; hasInvoice?: boolean };
       if (!regRes.ok) {
         if (regData.alreadyRegistered) {
@@ -562,7 +562,7 @@ export default function LandingPage() {
         const fd = new FormData();
         fd.append('invoice', form.invoice);
         fd.append('participantId', String(regData.participantId));
-        const upRes  = await fetch('/api/upload-invoice', { method: 'POST', headers: { 'x-requested-with': 'XMLHttpRequest' }, body: fd });
+        const upRes = await fetch('/api/upload-invoice', { method: 'POST', headers: { 'x-requested-with': 'XMLHttpRequest' }, body: fd });
         const upData = await upRes.json() as { error?: string; accepted?: boolean; message?: string };
         if (!upRes.ok) { setErrorMsg(upData.error ?? "Erreur lors de l'envoi de la facture."); setLoading(false); return; }
         setUploadResult({ accepted: upData.accepted === true, message: upData.message ?? '' });
@@ -584,13 +584,14 @@ export default function LandingPage() {
       <nav
         className="fixed top-0 left-0 right-0 z-50"
         style={{
-          background:    scrolled ? th.navBg : 'transparent',
+          background: scrolled ? th.navBg : 'transparent',
           backdropFilter: scrolled ? 'blur(20px)' : 'none',
-          borderBottom:  scrolled ? `1px solid ${th.navBorder}` : '1px solid transparent',
-          boxShadow:     scrolled ? `0 8px 40px ${th.isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.08)'}` : 'none',
-          transition:    'background 0.4s, backdrop-filter 0.4s, border-color 0.4s, box-shadow 0.4s',
+          borderBottom: scrolled ? `1px solid ${th.navBorder}` : '1px solid transparent',
+          boxShadow: scrolled ? `0 8px 40px ${th.isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.08)'}` : 'none',
+          transition: 'background 0.4s, backdrop-filter 0.4s, border-color 0.4s, box-shadow 0.4s',
         }}
       >
+
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center gap-3">
           <div className="flex items-center gap-3">
             <div
@@ -607,8 +608,8 @@ export default function LandingPage() {
 
           <div className="ml-auto flex items-center gap-6">
             <a href="#prizes" className="text-sm transition-colors hidden md:block" style={{ color: th.muted }} onMouseEnter={e => (e.currentTarget.style.color = th.text)} onMouseLeave={e => (e.currentTarget.style.color = th.muted)}>Prix</a>
-            <a href="#how"    className="text-sm transition-colors hidden md:block" style={{ color: th.muted }} onMouseEnter={e => (e.currentTarget.style.color = th.text)} onMouseLeave={e => (e.currentTarget.style.color = th.muted)}>Comment jouer</a>
-            <a href="#faq"    className="text-sm transition-colors hidden md:block" style={{ color: th.muted }} onMouseEnter={e => (e.currentTarget.style.color = th.text)} onMouseLeave={e => (e.currentTarget.style.color = th.muted)}>FAQ</a>
+            <a href="#how" className="text-sm transition-colors hidden md:block" style={{ color: th.muted }} onMouseEnter={e => (e.currentTarget.style.color = th.text)} onMouseLeave={e => (e.currentTarget.style.color = th.muted)}>Comment jouer</a>
+            <a href="#faq" className="text-sm transition-colors hidden md:block" style={{ color: th.muted }} onMouseEnter={e => (e.currentTarget.style.color = th.text)} onMouseLeave={e => (e.currentTarget.style.color = th.muted)}>FAQ</a>
             <ThemeToggle dark={dark} onToggle={() => setDark(d => !d)} />
             <RippleButton
               onClick={scrollToForm}
@@ -620,268 +621,7 @@ export default function LandingPage() {
           </div>
         </div>
       </nav>
-
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex items-center justify-center px-6 overflow-hidden">
-        <div className="absolute inset-0" aria-hidden>
-          <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse 80% 60% at 50% -10%, rgba(239,68,68,${th.isDark ? '0.18' : '0.1'}) 0%, transparent 70%)` }} />
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `linear-gradient(${th.gridLine} 1px,transparent 1px),linear-gradient(90deg,${th.gridLine} 1px,transparent 1px)`,
-              backgroundSize: '64px 64px',
-            }}
-          />
-          <StarField />
-          {/* Morphing orbs */}
-          <div className="absolute top-1/4 left-[15%] w-[480px] h-[480px] blur-[100px]" style={{ background: th.orbA, animation: 'float 6s ease-in-out infinite, morphBlob 9s ease-in-out infinite' }} />
-          <div className="absolute bottom-1/4 right-[10%] w-[380px] h-[380px] blur-[80px]" style={{ background: th.orbB, animation: 'floatAlt 9s ease-in-out infinite, morphBlob 12s ease-in-out 3s infinite reverse' }} />
-          <div className="absolute top-2/3 left-1/2 w-[300px] h-[300px] rounded-full blur-[80px]" style={{ background: th.orbC, animation: 'float 11s ease-in-out 3s infinite' }} />
-          {/* Rotating rings */}
-          <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full animate-rotate-slow"
-            style={{ border: `1px dashed ${th.ringA}` }}
-          />
-          <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[1100px] rounded-full"
-            style={{ border: `1px dashed ${th.ringB}`, animation: 'rotateSlow 35s linear infinite reverse' }}
-          />
-          <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[560px] h-[560px] rounded-full"
-            style={{ border: `1px dashed ${th.ringA}`, animation: 'rotateSlow 18s linear infinite' }}
-          />
-        </div>
-
-        <div className="relative max-w-5xl mx-auto text-center pt-24">
-          {/* Status pill */}
-          <div style={{ animation: 'fadeInUp 0.65s ease-out 0.15s both' }}>
-            <div
-              className="inline-flex items-center gap-2.5 rounded-full px-4 py-2 mb-10"
-              style={{ border: `1px solid ${th.border}`, background: th.glass, backdropFilter: 'blur(12px)' }}
-            >
-              <span className="w-2 h-2 bg-emerald-400 rounded-full" style={{ animation: 'pulseGlow 2s ease-in-out infinite', boxShadow: '0 0 8px rgba(52,211,153,0.8)' }} />
-              <span className="text-sm font-medium" style={{ color: th.sub }}>Campagne en cours · Inscriptions ouvertes</span>
-            </div>
-          </div>
-
-          {/* Headline */}
-          <div style={{ animation: 'fadeInUp 0.7s ease-out 0.3s both' }}>
-            <h1 className="font-black tracking-tight leading-none mb-6" style={{ fontSize: 'clamp(3.5rem,10vw,8rem)' }}>
-              <span style={{ color: th.text }}>La </span>
-              <span style={{ background: 'linear-gradient(135deg,#ef4444,#f87171,#ef4444)', backgroundSize: '200% 200%', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', animation: 'gradientShift 5s ease infinite' }}>
-                Tamboola
-              </span>
-              <br />
-              <span style={{ background: 'linear-gradient(135deg,#f59e0b,#fcd34d,#f59e0b)', backgroundSize: '200% 200%', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', animation: 'gradientShift 5s ease infinite 1.2s' }}>
-                Jotun
-              </span>
-            </h1>
-          </div>
-
-          {/* Subline */}
-          <div style={{ animation: 'fadeInUp 0.7s ease-out 0.45s both' }}>
-            <p className="text-lg md:text-xl max-w-xl mx-auto mb-10 leading-relaxed" style={{ color: th.sub }}>
-              Achetez des produits Jotun, inscrivez-vous et tentez de remporter
-              l&apos;un des <strong style={{ color: th.text }}>6 prix exceptionnels</strong>.
-            </p>
-          </div>
-
-          {/* CTAs */}
-          <div style={{ animation: 'fadeInUp 0.7s ease-out 0.6s both' }}>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-20">
-              <RippleButton
-                onClick={scrollToForm}
-                className="relative font-black text-base text-white rounded-2xl transition-all active:scale-95"
-                style={{
-                  background: 'linear-gradient(135deg,#ef4444,#b91c1c)',
-                  animation: 'pulseGlow 2.5s ease-in-out infinite',
-                  padding: '1rem 2.25rem',
-                }}
-              >
-                Je participe maintenant →
-              </RippleButton>
-              <Link
-                href="#prizes"
-                className="font-semibold text-base rounded-2xl transition-all"
-                style={{
-                  color: th.sub,
-                  padding: '1rem 2.25rem',
-                  background: th.glass,
-                  border: `1px solid ${th.border}`,
-                  backdropFilter: 'blur(8px)',
-                }}
-              >
-                Voir les prix ↓
-              </Link>
-            </div>
-          </div>
-
-          {/* Stat chips with animated counters */}
-          <div ref={statsRef} style={{ animation: 'fadeInUp 0.7s ease-out 0.75s both' }}>
-            <div className="grid grid-cols-3 gap-3 max-w-xs mx-auto">
-              <StatChip n="6"    label="Prix à gagner" visible={statsVisible} th={th} delay={0} />
-              <StatChip n="20K"  label="DA min."       visible={statsVisible} th={th} delay={120} />
-              <StatChip n="100%" label="Gratuit"       visible={statsVisible} th={th} delay={240} />
-            </div>
-          </div>
-
-          {/* Scroll cue */}
-          <div className="mt-16 flex flex-col items-center gap-2" style={{ opacity: 0.3 }}>
-            <span className="text-[10px] uppercase tracking-widest" style={{ color: th.text }}>Défiler</span>
-            <svg className="w-4 h-4 animate-bounce" style={{ color: th.text }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Divider ──────────────────────────────────────────────────────── */}
-      <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(239,68,68,0.3),transparent)' }} />
-
-      {/* ── Prizes ───────────────────────────────────────────────────────── */}
-      <section id="prizes" className="py-32 px-6 relative" style={{ background: th.page }}>
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: `radial-gradient(ellipse 60% 40% at 50% 50%, rgba(239,68,68,${th.isDark ? '0.04' : '0.025'}) 0%, transparent 70%)` }}
-          aria-hidden
-        />
-        <div className="relative max-w-5xl mx-auto">
-          <div ref={prizesRef} className="text-center mb-16">
-            <div style={reveal(prizesVisible, 0)}>
-              <div className="inline-flex items-center gap-3 mb-5">
-                <div className="h-px w-10 bg-red-500/50" />
-                <span className="text-red-400 text-xs font-bold tracking-[0.3em] uppercase">Les récompenses</span>
-                <div className="h-px w-10 bg-red-500/50" />
-              </div>
-            </div>
-            <div style={reveal(prizesVisible, 80)}>
-              <h2 className="text-5xl md:text-6xl font-black mb-4" style={{ color: th.text }}>Prix à gagner</h2>
-            </div>
-            <div style={reveal(prizesVisible, 140)}>
-              <p className="text-lg max-w-md mx-auto" style={{ color: th.muted }}>Six gagnants tirés au sort parmi tous les participants valides.</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {prizes.map((p, i) => (
-              <PrizeCard key={p.rank} p={p} index={i} visible={prizesVisible} th={th} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Divider ──────────────────────────────────────────────────────── */}
-      <div className="h-px" style={{ background: `linear-gradient(90deg,transparent,${th.border},transparent)` }} />
-
-      {/* ── How it works ─────────────────────────────────────────────────── */}
-      <section id="how" className="py-32 px-6 relative overflow-hidden" style={{ background: th.section }}>
-        <div
-          className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px"
-          style={{ background: `linear-gradient(to bottom,transparent,rgba(239,68,68,${th.isDark ? '0.15' : '0.08'}),transparent)` }}
-          aria-hidden
-        />
-        <div className="relative max-w-5xl mx-auto">
-          <div ref={stepsRef} className="text-center mb-20">
-            <div style={reveal(stepsVisible, 0)}>
-              <div className="inline-flex items-center gap-3 mb-5">
-                <div className="h-px w-10 bg-red-500/50" />
-                <span className="text-red-400 text-xs font-bold tracking-[0.3em] uppercase">Participation</span>
-                <div className="h-px w-10 bg-red-500/50" />
-              </div>
-            </div>
-            <div style={reveal(stepsVisible, 80)}>
-              <h2 className="text-5xl md:text-6xl font-black" style={{ color: th.text }}>Comment jouer ?</h2>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
-            <div
-              className="hidden lg:block absolute top-10 left-[calc(12.5%+28px)] right-[calc(12.5%+28px)] h-px pointer-events-none"
-              style={{
-                background: 'linear-gradient(90deg,rgba(239,68,68,0.4),rgba(239,68,68,0.2),rgba(239,68,68,0.4))',
-                opacity: stepsVisible ? 1 : 0,
-                transition: 'opacity 1s ease 0.6s',
-              }}
-              aria-hidden
-            />
-            {howSteps.map((s, i) => (
-              <div
-                key={s.n}
-                style={{
-                  ...reveal(stepsVisible, 200 + i * 120),
-                  transitionTimingFunction: 'cubic-bezier(0.34,1.56,0.64,1)',
-                }}
-                className="flex flex-col items-center md:items-start text-center md:text-left"
-              >
-                <div
-                  className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 font-black text-white text-xl relative z-10 flex-shrink-0"
-                  style={{ background: 'linear-gradient(135deg,#ef4444,#b91c1c)', boxShadow: '0 8px 32px rgba(239,68,68,0.35)' }}
-                >
-                  {s.n}
-                </div>
-                <h3 className="font-bold text-lg mb-2" style={{ color: th.text }}>{s.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: th.muted }}>{s.sub}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Painter callout */}
-          <div
-            className="mt-16 relative overflow-hidden rounded-2xl"
-            style={{
-              border: '1px solid rgba(245,158,11,0.2)',
-              background: `linear-gradient(135deg,rgba(245,158,11,${th.isDark ? '0.06' : '0.04'}),rgba(180,83,9,0.03))`,
-              ...reveal(stepsVisible, 700),
-            }}
-          >
-            <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(245,158,11,0.4),transparent)' }} aria-hidden />
-            <div className="p-6 flex gap-5 items-start">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(245,158,11,0.12)' }}>
-                <svg viewBox="0 0 24 24" className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                </svg>
-              </div>
-              <div>
-                <div className="font-bold text-amber-400 mb-1">Vous êtes peintre en bâtiment ?</div>
-                <p className="text-sm leading-relaxed" style={{ color: th.isDark ? 'rgba(253,230,138,0.55)' : 'rgba(120,80,10,0.7)' }}>
-                  Une facture d&apos;achat Jotun d&apos;un montant minimum de{' '}
-                  <strong className="text-amber-400">20 000 DA</strong> est requise pour valider votre participation.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Divider ──────────────────────────────────────────────────────── */}
-      <div className="h-px" style={{ background: `linear-gradient(90deg,transparent,${th.border},transparent)` }} />
-
-      {/* ── FAQ ──────────────────────────────────────────────────────────── */}
-      <section id="faq" className="py-32 px-6 relative" style={{ background: th.page }}>
-        <div className="relative max-w-2xl mx-auto">
-          <div ref={faqRef} className="text-center mb-14">
-            <div style={reveal(faqVisible, 0)}>
-              <div className="inline-flex items-center gap-3 mb-5">
-                <div className="h-px w-10 bg-red-500/50" />
-                <span className="text-red-400 text-xs font-bold tracking-[0.3em] uppercase">Questions fréquentes</span>
-                <div className="h-px w-10 bg-red-500/50" />
-              </div>
-            </div>
-            <div style={reveal(faqVisible, 80)}>
-              <h2 className="text-5xl font-black" style={{ color: th.text }}>FAQ</h2>
-            </div>
-          </div>
-          <div className="space-y-3">
-            {faqs.map((f, i) => <FaqItem key={f.q} f={f} index={i} visible={faqVisible} th={th} />)}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Divider ──────────────────────────────────────────────────────── */}
-      <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(239,68,68,0.25),transparent)' }} />
-
-      {/* ── Registration ─────────────────────────────────────────────────── */}
-      <section id="register" ref={formRef} className="py-32 px-6 relative overflow-hidden" style={{ background: th.section }}>
+      <section id="register" ref={formRef} className="py-32 px-6 relative overflow-hidden">
         <div
           className="absolute inset-0 pointer-events-none"
           style={{ background: `radial-gradient(ellipse 50% 60% at 50% 0%, rgba(239,68,68,${th.isDark ? '0.1' : '0.06'}) 0%, transparent 70%)` }}
@@ -966,7 +706,7 @@ export default function LandingPage() {
                     className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all"
                     style={{ background: th.input, border: `1px solid ${th.border}`, color: th.inputText }}
                     onFocus={e => { e.currentTarget.style.border = `1px solid ${th.borderFocus}`; e.currentTarget.style.background = th.inputFocus; }}
-                    onBlur={e =>  { e.currentTarget.style.border = `1px solid ${th.border}`;      e.currentTarget.style.background = th.input; }}
+                    onBlur={e => { e.currentTarget.style.border = `1px solid ${th.border}`; e.currentTarget.style.background = th.input; }}
                   />
                 </div>
 
@@ -982,7 +722,7 @@ export default function LandingPage() {
                     className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all"
                     style={{ background: th.input, border: `1px solid ${th.border}`, color: th.inputText }}
                     onFocus={e => { e.currentTarget.style.border = `1px solid ${th.borderFocus}`; e.currentTarget.style.background = th.inputFocus; }}
-                    onBlur={e =>  { e.currentTarget.style.border = `1px solid ${th.border}`;      e.currentTarget.style.background = th.input; }}
+                    onBlur={e => { e.currentTarget.style.border = `1px solid ${th.border}`; e.currentTarget.style.background = th.input; }}
                   />
                 </div>
 
@@ -996,7 +736,7 @@ export default function LandingPage() {
                     className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all appearance-none"
                     style={{ background: th.input, border: `1px solid ${th.border}`, color: form.wilaya ? th.inputText : th.placeholder, colorScheme: th.isDark ? 'dark' : 'light' }}
                     onFocus={e => { e.currentTarget.style.border = `1px solid ${th.borderFocus}`; }}
-                    onBlur={e =>  { e.currentTarget.style.border = `1px solid ${th.border}`; }}
+                    onBlur={e => { e.currentTarget.style.border = `1px solid ${th.border}`; }}
                   >
                     <option value="" style={{ background: th.selectBg, color: th.placeholder }}>— Sélectionner votre wilaya —</option>
                     {WILAYAS.map(w => <option key={w} value={w} style={{ background: th.selectBg, color: th.inputText }}>{w}</option>)}
@@ -1054,7 +794,7 @@ export default function LandingPage() {
                     className="flex flex-col items-center justify-center gap-3 w-full border-2 border-dashed rounded-xl px-4 py-8 cursor-pointer transition-all"
                     style={{
                       borderColor: form.invoice ? 'rgba(16,185,129,0.4)' : th.border,
-                      background:  form.invoice ? `rgba(16,185,129,${th.isDark ? '0.05' : '0.03'})` : th.glass,
+                      background: form.invoice ? `rgba(16,185,129,${th.isDark ? '0.05' : '0.03'})` : th.glass,
                     }}
                     onMouseEnter={e => { if (!form.invoice) e.currentTarget.style.borderColor = 'rgba(239,68,68,0.35)'; }}
                     onMouseLeave={e => { if (!form.invoice) e.currentTarget.style.borderColor = th.border; }}
@@ -1131,6 +871,150 @@ export default function LandingPage() {
           )}
         </div>
       </section>
+      <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(239,68,68,0.3),transparent)' }} />
+  <section id="prizes" className="py-32 px-6 relative" style={{ background: th.page }}>
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: `radial-gradient(ellipse 60% 40% at 50% 50%, rgba(239,68,68,${th.isDark ? '0.04' : '0.025'}) 0%, transparent 70%)` }}
+          aria-hidden
+        />
+        <div className="relative max-w-5xl mx-auto">
+          <div ref={prizesRef} className="text-center mb-16">
+            <div style={reveal(prizesVisible, 0)}>
+              <div className="inline-flex items-center gap-3 mb-5">
+                <div className="h-px w-10 bg-red-500/50" />
+                <span className="text-red-400 text-xs font-bold tracking-[0.3em] uppercase">Les récompenses</span>
+                <div className="h-px w-10 bg-red-500/50" />
+              </div>
+            </div>
+            <div style={reveal(prizesVisible, 80)}>
+              <h2 className="text-5xl md:text-6xl font-black mb-4" style={{ color: th.text }}>Prix à gagner</h2>
+            </div>
+            <div style={reveal(prizesVisible, 140)}>
+              <p className="text-lg max-w-md mx-auto" style={{ color: th.muted }}>Six gagnants tirés au sort parmi tous les participants valides.</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {prizes.map((p, i) => (
+              <PrizeCard key={p.rank} p={p} index={i} visible={prizesVisible} th={th} />
+            ))}
+          </div>
+        </div>
+      </section>
+      <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(239,68,68,0.3),transparent)' }} />
+
+      {/* ── Divider ──────────────────────────────────────────────────────── */}
+      {/* <div className="h-px" style={{ background: `linear-gradient(90deg,transparent,${th.border},transparent)` }} /> */}
+
+      {/* ── How it works ─────────────────────────────────────────────────── */}
+      {/* <section id="how" className="py-32 px-6 relative overflow-hidden" style={{ background: th.section }}>
+        <div
+          className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px"
+          style={{ background: `linear-gradient(to bottom,transparent,rgba(239,68,68,${th.isDark ? '0.15' : '0.08'}),transparent)` }}
+          aria-hidden
+        />
+        <div className="relative max-w-5xl mx-auto">
+          <div ref={stepsRef} className="text-center mb-20">
+            <div style={reveal(stepsVisible, 0)}>
+              <div className="inline-flex items-center gap-3 mb-5">
+                <div className="h-px w-10 bg-red-500/50" />
+                <span className="text-red-400 text-xs font-bold tracking-[0.3em] uppercase">Participation</span>
+                <div className="h-px w-10 bg-red-500/50" />
+              </div>
+            </div>
+            <div style={reveal(stepsVisible, 80)}>
+              <h2 className="text-5xl md:text-6xl font-black" style={{ color: th.text }}>Comment jouer ?</h2>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
+            <div
+              className="hidden lg:block absolute top-10 left-[calc(12.5%+28px)] right-[calc(12.5%+28px)] h-px pointer-events-none"
+              style={{
+                background: 'linear-gradient(90deg,rgba(239,68,68,0.4),rgba(239,68,68,0.2),rgba(239,68,68,0.4))',
+                opacity: stepsVisible ? 1 : 0,
+                transition: 'opacity 1s ease 0.6s',
+              }}
+              aria-hidden
+            />
+            {howSteps.map((s, i) => (
+              <div
+                key={s.n}
+                style={{
+                  ...reveal(stepsVisible, 200 + i * 120),
+                  transitionTimingFunction: 'cubic-bezier(0.34,1.56,0.64,1)',
+                }}
+                className="flex flex-col items-center md:items-start text-center md:text-left"
+              >
+                <div
+                  className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 font-black text-white text-xl relative z-10 flex-shrink-0"
+                  style={{ background: 'linear-gradient(135deg,#ef4444,#b91c1c)', boxShadow: '0 8px 32px rgba(239,68,68,0.35)' }}
+                >
+                  {s.n}
+                </div>
+                <h3 className="font-bold text-lg mb-2" style={{ color: th.text }}>{s.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: th.muted }}>{s.sub}</p>
+              </div>
+            ))}
+          </div>
+
+          <div
+            className="mt-16 relative overflow-hidden rounded-2xl"
+            style={{
+              border: '1px solid rgba(245,158,11,0.2)',
+              background: `linear-gradient(135deg,rgba(245,158,11,${th.isDark ? '0.06' : '0.04'}),rgba(180,83,9,0.03))`,
+              ...reveal(stepsVisible, 700),
+            }}
+          >
+            <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(245,158,11,0.4),transparent)' }} aria-hidden />
+            <div className="p-6 flex gap-5 items-start">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(245,158,11,0.12)' }}>
+                <svg viewBox="0 0 24 24" className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </div>
+              <div>
+                <div className="font-bold text-amber-400 mb-1">Vous êtes peintre en bâtiment ?</div>
+                <p className="text-sm leading-relaxed" style={{ color: th.isDark ? 'rgba(253,230,138,0.55)' : 'rgba(120,80,10,0.7)' }}>
+                  Une facture d&apos;achat Jotun d&apos;un montant minimum de{' '}
+                  <strong className="text-amber-400">20 000 DA</strong> est requise pour valider votre participation.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section> */}
+
+      {/* ── Divider ──────────────────────────────────────────────────────── */}
+      <div className="h-px" style={{ background: `linear-gradient(90deg,transparent,${th.border},transparent)` }} />
+
+      {/* ── FAQ ──────────────────────────────────────────────────────────── */}
+      <section id="faq" className="py-32 px-6 relative" style={{ background: th.page }}>
+        <div className="relative max-w-2xl mx-auto">
+          <div ref={faqRef} className="text-center mb-14">
+            <div style={reveal(faqVisible, 0)}>
+              <div className="inline-flex items-center gap-3 mb-5">
+                <div className="h-px w-10 bg-red-500/50" />
+                <span className="text-red-400 text-xs font-bold tracking-[0.3em] uppercase">Questions fréquentes</span>
+                <div className="h-px w-10 bg-red-500/50" />
+              </div>
+            </div>
+            <div style={reveal(faqVisible, 80)}>
+              <h2 className="text-5xl font-black" style={{ color: th.text }}>FAQ</h2>
+            </div>
+          </div>
+          <div className="space-y-3">
+            {faqs.map((f, i) => <FaqItem key={f.q} f={f} index={i} visible={faqVisible} th={th} />)}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Divider ──────────────────────────────────────────────────────── */}
+      <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(239,68,68,0.25),transparent)' }} />
+
+      {/* ── Registration ─────────────────────────────────────────────────── */}
+
 
       {/* ── Footer ───────────────────────────────────────────────────────── */}
       <footer
