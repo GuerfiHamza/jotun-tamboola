@@ -39,7 +39,7 @@ export default function AdminLogin() {
       <div className="absolute inset-0 pointer-events-none" aria-hidden>
         <div
           className="absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(239,68,68,0.14) 0%, transparent 70%)' }}
+          style={{ background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(13,42,148,0.14) 0%, transparent 70%)' }}
         />
         <div
           className="absolute inset-0"
@@ -51,7 +51,7 @@ export default function AdminLogin() {
         {/* Orb */}
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 rounded-full blur-[120px]"
-          style={{ background: 'rgba(239,68,68,0.06)', animation: 'float 8s ease-in-out infinite' }}
+          style={{ background: 'rgba(13,42,148,0.06)', animation: 'float 8s ease-in-out infinite' }}
         />
         {/* Rotating ring */}
         <div
@@ -66,7 +66,7 @@ export default function AdminLogin() {
         <div className="text-center mb-8">
           <div
             className="w-16 h-16 rounded-2xl flex items-center justify-center font-black text-white text-2xl mx-auto mb-4 shadow-xl"
-            style={{ background: 'linear-gradient(135deg,#ef4444,#b91c1c)', boxShadow: '0 8px 32px rgba(239,68,68,0.45)' }}
+            style={{ background: 'linear-gradient(135deg,#0d2a94,#072060)', boxShadow: '0 8px 32px rgba(13,42,148,0.45)' }}
           >
             J
           </div>
@@ -80,7 +80,7 @@ export default function AdminLogin() {
           style={{ background: 'linear-gradient(135deg,#0f0f1c,#12121f)', border: '1px solid rgba(255,255,255,0.07)' }}
         >
           {/* Top accent line */}
-          <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(239,68,68,0.6),transparent)' }} aria-hidden />
+          <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(13,42,148,0.6),transparent)' }} aria-hidden />
 
           <div className="px-8 pt-7 pb-2">
             <p className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: 'rgba(255,255,255,0.2)' }}>Connexion sécurisée</p>
@@ -90,9 +90,9 @@ export default function AdminLogin() {
 
             {/* Error */}
             {error && (
-              <div
+                <div
                 className="rounded-xl px-4 py-3 flex gap-3 items-center text-sm"
-                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#fca5a5', animation: 'bounceIn 0.4s ease both' }}
+                style={{ background: 'rgba(13,42,148,0.08)', border: '1px solid rgba(13,42,148,0.2)', color: '#9fb3f0', animation: 'bounceIn 0.4s ease both' }}
               >
                 <svg viewBox="0 0 20 20" className="w-4 h-4 shrink-0" fill="currentColor">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
@@ -117,7 +117,7 @@ export default function AdminLogin() {
                   placeholder="admin"
                   className="w-full rounded-xl pl-10 pr-4 py-3 text-white text-sm placeholder-white/20 outline-none transition-all"
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
-                  onFocus={e => { e.currentTarget.style.border = '1px solid rgba(239,68,68,0.45)'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
+                  onFocus={e => { e.currentTarget.style.border = '1px solid rgba(13,42,148,0.45)'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
                   onBlur={e =>  { e.currentTarget.style.border = '1px solid rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
                 />
               </div>
@@ -139,7 +139,7 @@ export default function AdminLogin() {
                   placeholder="••••••••"
                   className="w-full rounded-xl pl-10 pr-11 py-3 text-white text-sm placeholder-white/20 outline-none transition-all"
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
-                  onFocus={e => { e.currentTarget.style.border = '1px solid rgba(239,68,68,0.45)'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
+                  onFocus={e => { e.currentTarget.style.border = '1px solid rgba(13,42,148,0.45)'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
                   onBlur={e =>  { e.currentTarget.style.border = '1px solid rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
                 />
                 <button
@@ -171,7 +171,7 @@ export default function AdminLogin() {
               type="submit"
               disabled={loading}
               className="relative w-full font-bold text-sm text-white rounded-xl py-3.5 flex items-center justify-center gap-2.5 transition-all active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden"
-              style={{ background: 'linear-gradient(135deg,#ef4444,#b91c1c)', boxShadow: '0 0 28px rgba(239,68,68,0.4)', marginTop: '8px' }}
+              style={{ background: 'linear-gradient(135deg,#0d2a94,#072060)', boxShadow: '0 0 28px rgba(13,42,148,0.4)', marginTop: '8px' }}
             >
               {loading ? (
                 <>

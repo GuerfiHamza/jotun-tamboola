@@ -145,7 +145,7 @@ function getTheme(dark: boolean) {
     inputFocus: 'rgba(255,255,255,0.08)',
     border: 'rgba(255,255,255,0.07)',
     borderSub: 'rgba(255,255,255,0.05)',
-    borderFocus: 'rgba(239,68,68,0.45)',
+    borderFocus: 'rgba(13,42,148,0.45)',
     text: '#f9fafb',
     sub: 'rgba(255,255,255,0.55)',
     muted: 'rgba(255,255,255,0.35)',
@@ -157,8 +157,8 @@ function getTheme(dark: boolean) {
     placeholder: 'rgba(255,255,255,0.2)',
     selectBg: '#0f0f1c',
     pill: 'rgba(255,255,255,0.04)',
-    orbA: 'rgba(239,68,68,0.08)',
-    orbB: 'rgba(239,68,68,0.05)',
+    orbA: 'rgba(13,42,148,0.08)',
+    orbB: 'rgba(13,42,148,0.05)',
     orbC: 'rgba(245,158,11,0.04)',
     gridLine: 'rgba(255,255,255,0.025)',
     ringA: 'rgba(255,255,255,0.025)',
@@ -176,7 +176,7 @@ function getTheme(dark: boolean) {
     inputFocus: 'rgba(0,0,0,0.07)',
     border: 'rgba(0,0,0,0.09)',
     borderSub: 'rgba(0,0,0,0.05)',
-    borderFocus: 'rgba(239,68,68,0.5)',
+    borderFocus: 'rgba(13,42,148,0.5)',
     text: '#0d0d1a',
     sub: 'rgba(0,0,0,0.6)',
     muted: 'rgba(0,0,0,0.4)',
@@ -188,8 +188,8 @@ function getTheme(dark: boolean) {
     placeholder: 'rgba(0,0,0,0.3)',
     selectBg: '#ffffff',
     pill: 'rgba(0,0,0,0.03)',
-    orbA: 'rgba(239,68,68,0.06)',
-    orbB: 'rgba(239,68,68,0.04)',
+    orbA: 'rgba(13,42,148,0.06)',
+    orbB: 'rgba(13,42,148,0.04)',
     orbC: 'rgba(245,158,11,0.03)',
     gridLine: 'rgba(0,0,0,0.04)',
     ringA: 'rgba(0,0,0,0.04)',
@@ -385,12 +385,12 @@ function FaqItem({ f, index, visible, th }: { f: typeof faqs[0]; index: number; 
   const [open, setOpen] = useState(false);
   return (
     <div style={reveal(visible, index * 80)}>
-      <div
-        className="rounded-2xl overflow-hidden transition-all duration-300"
-        style={{
-          border: `1px solid ${open ? 'rgba(239,68,68,0.3)' : th.border}`,
-          background: open ? (th.isDark ? 'rgba(239,68,68,0.04)' : 'rgba(239,68,68,0.02)') : 'transparent',
-        }}
+          <div
+            className="rounded-2xl overflow-hidden transition-all duration-300"
+            style={{
+              border: `1px solid ${open ? 'rgba(13,42,148,0.3)' : th.border}`,
+              background: open ? (th.isDark ? 'rgba(13,42,148,0.04)' : 'rgba(13,42,148,0.02)') : 'transparent',
+            }}
       >
         <button
           className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left"
@@ -398,22 +398,22 @@ function FaqItem({ f, index, visible, th }: { f: typeof faqs[0]; index: number; 
           aria-expanded={open}
         >
           <div className="flex items-center gap-4 min-w-0">
-            <span className="text-red-500 font-black text-xs tabular-nums flex-shrink-0 w-6">
+            <span className="text-blue-500 font-black text-xs tabular-nums flex-shrink-0 w-6">
               {String(index + 1).padStart(2, '0')}
             </span>
             <span className="font-semibold text-sm" style={{ color: th.text }}>{f.q}</span>
           </div>
-          <div
+            <div
             className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
             style={{
-              border: `1px solid ${open ? 'rgba(239,68,68,0.4)' : th.border}`,
-              background: open ? 'rgba(239,68,68,0.15)' : 'transparent',
+              border: `1px solid ${open ? 'rgba(13,42,148,0.4)' : th.border}`,
+              background: open ? 'rgba(13,42,148,0.15)' : 'transparent',
               transform: open ? 'rotate(45deg)' : 'rotate(0deg)',
               transition: 'transform 0.3s ease, background 0.3s ease, border-color 0.3s ease',
             }}
             aria-hidden
           >
-            <svg className="w-3.5 h-3.5" style={{ color: open ? '#f87171' : th.muted }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg className="w-3.5 h-3.5" style={{ color: open ? '#60a5fa' : th.muted }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16M4 12h16" />
             </svg>
           </div>
@@ -596,13 +596,13 @@ export default function LandingPage() {
           <div className="flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-white text-base shadow-lg"
-              style={{ background: 'linear-gradient(135deg,#ef4444,#b91c1c)', boxShadow: '0 4px 20px rgba(239,68,68,0.4)' }}
+              style={{ background: 'linear-gradient(135deg,#0d2a94,#072060)', boxShadow: '0 4px 20px rgba(13,42,148,0.4)' }}
             >
               J
             </div>
             <div className="leading-none">
               <div className="font-black text-sm tracking-tight" style={{ color: th.text }}>JOTUN</div>
-              <div className="text-[10px] font-bold text-red-400 tracking-[0.2em] uppercase">Tamboola</div>
+              <div className="text-[10px] font-bold text-blue-400 tracking-[0.2em] uppercase">Tamboola</div>
             </div>
           </div>
 
@@ -614,7 +614,7 @@ export default function LandingPage() {
             <RippleButton
               onClick={scrollToForm}
               className="text-sm font-bold text-white px-5 rounded-xl transition-all active:scale-95"
-              style={{ background: 'linear-gradient(135deg,#ef4444,#b91c1c)', boxShadow: '0 0 20px rgba(239,68,68,0.35)', padding: '0.6rem 1.25rem' }}
+              style={{ background: 'linear-gradient(135deg,#0d2a94,#072060)', boxShadow: '0 0 20px rgba(13,42,148,0.35)', padding: '0.6rem 1.25rem' }}
             >
               Participer
             </RippleButton>
@@ -624,16 +624,16 @@ export default function LandingPage() {
       <section id="register" ref={formRef} className="py-32 px-6 relative overflow-hidden">
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ background: `radial-gradient(ellipse 50% 60% at 50% 0%, rgba(239,68,68,${th.isDark ? '0.1' : '0.06'}) 0%, transparent 70%)` }}
+          style={{ background: `radial-gradient(ellipse 50% 60% at 50% 0%, rgba(13,42,148,${th.isDark ? '0.1' : '0.06'}) 0%, transparent 70%)` }}
           aria-hidden
         />
         <div className="relative max-w-lg mx-auto">
           <div ref={formTitleRef} className="text-center mb-12">
             <div style={reveal(formTitleVisible, 0)}>
               <div className="inline-flex items-center gap-3 mb-5">
-                <div className="h-px w-10 bg-red-500/50" />
-                <span className="text-red-400 text-xs font-bold tracking-[0.3em] uppercase">Inscription</span>
-                <div className="h-px w-10 bg-red-500/50" />
+                <div className="h-px w-10 bg-blue-500/50" />
+                <span className="text-blue-400 text-xs font-bold tracking-[0.3em] uppercase">Inscription</span>
+                <div className="h-px w-10 bg-blue-500/50" />
               </div>
             </div>
             <div style={reveal(formTitleVisible, 80)}>
@@ -660,7 +660,7 @@ export default function LandingPage() {
               <p className="text-sm leading-relaxed" style={{ color: th.sub }}>{uploadResult?.message || 'Vous êtes bien inscrit à la Tamboola Jotun. Bonne chance !'}</p>
               <button
                 onClick={() => { setStep('form'); setUploadResult(null); setForm({ full_name: '', phone: '', wilaya: '', is_painter: false, consent: false, invoice: null }); }}
-                className="mt-8 text-sm text-red-400 hover:text-red-300 font-semibold transition-colors"
+                className="mt-8 text-sm text-blue-400 hover:text-blue-300 font-semibold transition-colors"
               >
                 Nouvelle inscription →
               </button>
@@ -674,7 +674,7 @@ export default function LandingPage() {
                 animation: formTitleVisible ? 'slideInRight 0.6s ease-out 0.3s both' : undefined,
               }}
             >
-              <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(239,68,68,0.6),transparent)' }} aria-hidden />
+              <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(13,42,148,0.6),transparent)' }} aria-hidden />
 
               <div className="px-8 py-7" style={{ borderBottom: `1px solid ${th.borderSub}` }}>
                 <h3 className="font-bold text-xl" style={{ color: th.text }}>Créer votre participation</h3>
@@ -685,7 +685,7 @@ export default function LandingPage() {
                 {errorMsg && (
                   <div
                     className="rounded-xl p-4 flex gap-3 items-start text-sm"
-                    style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#fca5a5', animation: 'bounceIn 0.4s ease both' }}
+                    style={{ background: 'rgba(13,42,148,0.08)', border: '1px solid rgba(13,42,148,0.2)', color: '#9fb3f0', animation: 'bounceIn 0.4s ease both' }}
                   >
                     <svg className="w-5 h-5 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -696,8 +696,8 @@ export default function LandingPage() {
 
                 {/* Name */}
                 <div>
-                  <label className="block text-[11px] font-bold tracking-[0.18em] uppercase mb-2.5" style={{ color: th.muted }}>
-                    Nom complet <span className="text-red-500">*</span>
+                    <label className="block text-[11px] font-bold tracking-[0.18em] uppercase mb-2.5" style={{ color: th.muted }}>
+                    Nom complet <span className="text-blue-500">*</span>
                   </label>
                   <input
                     type="text" required autoComplete="name"
@@ -712,8 +712,8 @@ export default function LandingPage() {
 
                 {/* Phone */}
                 <div>
-                  <label className="block text-[11px] font-bold tracking-[0.18em] uppercase mb-2.5" style={{ color: th.muted }}>
-                    Téléphone <span className="text-red-500">*</span>
+                    <label className="block text-[11px] font-bold tracking-[0.18em] uppercase mb-2.5" style={{ color: th.muted }}>
+                    Téléphone <span className="text-blue-500">*</span>
                   </label>
                   <input
                     type="tel" required autoComplete="tel"
@@ -729,7 +729,7 @@ export default function LandingPage() {
                 {/* Wilaya */}
                 <div>
                   <label className="block text-[11px] font-bold tracking-[0.18em] uppercase mb-2.5" style={{ color: th.muted }}>
-                    Wilaya <span className="text-red-500">*</span>
+                    Wilaya <span className="text-blue-500">*</span>
                   </label>
                   <select
                     required value={form.wilaya} onChange={e => set('wilaya', e.target.value)}
@@ -750,30 +750,30 @@ export default function LandingPage() {
                     type="button"
                     onClick={() => set('is_painter', !form.is_painter)}
                     className="w-full flex items-center gap-4 p-4 rounded-xl text-left transition-all"
-                    style={{
-                      border: form.is_painter ? '1px solid rgba(239,68,68,0.35)' : `1px solid ${th.border}`,
-                      background: form.is_painter ? 'rgba(239,68,68,0.07)' : th.glass,
+                      style={{
+                      border: form.is_painter ? '1px solid rgba(13,42,148,0.35)' : `1px solid ${th.border}`,
+                      background: form.is_painter ? 'rgba(13,42,148,0.07)' : th.glass,
                     }}
                   >
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all"
-                      style={{ background: form.is_painter ? 'rgba(239,68,68,0.15)' : th.glassHard }}
+                      style={{ background: form.is_painter ? 'rgba(13,42,148,0.15)' : th.glassHard }}
                     >
-                      <svg viewBox="0 0 24 24" className="w-5 h-5 transition-colors" style={{ color: form.is_painter ? '#f87171' : th.muted }} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <svg viewBox="0 0 24 24" className="w-5 h-5 transition-colors" style={{ color: form.is_painter ? '#60a5fa' : th.muted }} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                       </svg>
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm font-semibold transition-colors" style={{ color: form.is_painter ? '#fca5a5' : th.sub }}>
+                      <div className="text-sm font-semibold transition-colors" style={{ color: form.is_painter ? '#9fb3f0' : th.sub }}>
                         Je suis peintre en bâtiment
                       </div>
                       <div className="text-[11px] mt-0.5" style={{ color: th.faint }}>
                         {form.is_painter ? 'Facture Jotun ≥ 20 000 DA requise' : 'Cliquez si vous exercez ce métier'}
                       </div>
                     </div>
-                    <div
+                      <div
                       className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all"
-                      style={{ background: form.is_painter ? '#ef4444' : 'transparent', borderColor: form.is_painter ? '#ef4444' : th.muted }}
+                      style={{ background: form.is_painter ? '#0d2a94' : 'transparent', borderColor: form.is_painter ? '#0d2a94' : th.muted }}
                     >
                       {form.is_painter && (
                         <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -787,7 +787,7 @@ export default function LandingPage() {
                 {/* Invoice upload */}
                 <div>
                   <label className="block text-[11px] font-bold tracking-[0.18em] uppercase mb-2.5" style={{ color: th.muted }}>
-                    Facture Jotun <span className="text-red-500">*</span>
+                    Facture Jotun <span className="text-blue-500">*</span>
                   </label>
                   <PhotoTips dark={th.isDark} />
                   <label
@@ -850,8 +850,8 @@ export default function LandingPage() {
                 <RippleButton
                   className="w-full font-bold text-sm text-white rounded-xl py-4 flex items-center justify-center gap-2.5 transition-all active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed"
                   style={{
-                    background: 'linear-gradient(135deg,#ef4444,#b91c1c)',
-                    boxShadow: form.consent ? '0 0 32px rgba(239,68,68,0.4)' : 'none',
+                    background: 'linear-gradient(135deg,#0d2a94,#072060)',
+                    boxShadow: form.consent ? '0 0 32px rgba(13,42,148,0.4)' : 'none',
                   }}
                 >
                   {loading ? (
@@ -871,20 +871,20 @@ export default function LandingPage() {
           )}
         </div>
       </section>
-      <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(239,68,68,0.3),transparent)' }} />
+      <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(13,42,148,0.3),transparent)' }} />
   <section id="prizes" className="py-32 px-6 relative" style={{ background: th.page }}>
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ background: `radial-gradient(ellipse 60% 40% at 50% 50%, rgba(239,68,68,${th.isDark ? '0.04' : '0.025'}) 0%, transparent 70%)` }}
+          style={{ background: `radial-gradient(ellipse 60% 40% at 50% 50%, rgba(13,42,148,${th.isDark ? '0.04' : '0.025'}) 0%, transparent 70%)` }}
           aria-hidden
         />
         <div className="relative max-w-5xl mx-auto">
           <div ref={prizesRef} className="text-center mb-16">
             <div style={reveal(prizesVisible, 0)}>
               <div className="inline-flex items-center gap-3 mb-5">
-                <div className="h-px w-10 bg-red-500/50" />
-                <span className="text-red-400 text-xs font-bold tracking-[0.3em] uppercase">Les récompenses</span>
-                <div className="h-px w-10 bg-red-500/50" />
+                <div className="h-px w-10 bg-blue-500/50" />
+                <span className="text-blue-400 text-xs font-bold tracking-[0.3em] uppercase">Les récompenses</span>
+                <div className="h-px w-10 bg-blue-500/50" />
               </div>
             </div>
             <div style={reveal(prizesVisible, 80)}>
@@ -902,7 +902,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-      <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(239,68,68,0.3),transparent)' }} />
+      <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(13,42,148,0.3),transparent)' }} />
 
       {/* ── Divider ──────────────────────────────────────────────────────── */}
       {/* <div className="h-px" style={{ background: `linear-gradient(90deg,transparent,${th.border},transparent)` }} /> */}
@@ -918,9 +918,9 @@ export default function LandingPage() {
           <div ref={stepsRef} className="text-center mb-20">
             <div style={reveal(stepsVisible, 0)}>
               <div className="inline-flex items-center gap-3 mb-5">
-                <div className="h-px w-10 bg-red-500/50" />
-                <span className="text-red-400 text-xs font-bold tracking-[0.3em] uppercase">Participation</span>
-                <div className="h-px w-10 bg-red-500/50" />
+                <div className="h-px w-10 bg-blue-500/50" />
+                <span className="text-blue-400 text-xs font-bold tracking-[0.3em] uppercase">Participation</span>
+                <div className="h-px w-10 bg-blue-500/50" />
               </div>
             </div>
             <div style={reveal(stepsVisible, 80)}>
@@ -995,9 +995,9 @@ export default function LandingPage() {
           <div ref={faqRef} className="text-center mb-14">
             <div style={reveal(faqVisible, 0)}>
               <div className="inline-flex items-center gap-3 mb-5">
-                <div className="h-px w-10 bg-red-500/50" />
-                <span className="text-red-400 text-xs font-bold tracking-[0.3em] uppercase">Questions fréquentes</span>
-                <div className="h-px w-10 bg-red-500/50" />
+                <div className="h-px w-10 bg-blue-500/50" />
+                <span className="text-blue-400 text-xs font-bold tracking-[0.3em] uppercase">Questions fréquentes</span>
+                <div className="h-px w-10 bg-blue-500/50" />
               </div>
             </div>
             <div style={reveal(faqVisible, 80)}>
@@ -1011,7 +1011,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Divider ──────────────────────────────────────────────────────── */}
-      <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(239,68,68,0.25),transparent)' }} />
+      <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(13,42,148,0.25),transparent)' }} />
 
       {/* ── Registration ─────────────────────────────────────────────────── */}
 
@@ -1029,7 +1029,7 @@ export default function LandingPage() {
               </div>
               <div>
                 <div className="font-black tracking-tight" style={{ color: th.text }}>JOTUN</div>
-                <div className="text-[10px] text-red-400 font-bold tracking-[0.2em] uppercase">Tamboola</div>
+                <div className="text-[10px] text-blue-400 font-bold tracking-[0.2em] uppercase">Tamboola</div>
               </div>
             </div>
             <p className="text-sm text-center" style={{ color: th.faint }}>
@@ -1037,7 +1037,6 @@ export default function LandingPage() {
             </p>
             <div className="flex items-center gap-6">
               <a href="#register" className="text-sm transition-colors" style={{ color: th.faint }} onMouseEnter={e => (e.currentTarget.style.color = th.text)} onMouseLeave={e => (e.currentTarget.style.color = th.faint)}>Participer</a>
-              <a href="/admin/login" className="text-sm transition-colors" style={{ color: th.faint }} onMouseEnter={e => (e.currentTarget.style.color = th.text)} onMouseLeave={e => (e.currentTarget.style.color = th.faint)}>Admin</a>
             </div>
           </div>
           <div className="mt-10 pt-8 text-center text-xs" style={{ borderTop: `1px solid ${th.borderSub}`, color: th.faint }}>

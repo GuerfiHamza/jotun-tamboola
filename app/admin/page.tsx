@@ -27,7 +27,7 @@ function StatusBadge({ s }: { s: ParticipantStatus | InvoiceStatus }) {
   const cfg: Record<string, { bg: string; color: string; label: string }> = {
     pending:  { bg: 'rgba(234,179,8,0.12)',  color: '#fbbf24', label: 'En attente' },
     approved: { bg: 'rgba(16,185,129,0.12)', color: '#34d399', label: 'Approuvé'   },
-    rejected: { bg: 'rgba(239,68,68,0.12)',  color: '#f87171', label: 'Refusé'      },
+    rejected: { bg: 'rgba(13,42,148,0.12)',  color: '#60a5fa', label: 'Refusé'      },
     accepted: { bg: 'rgba(16,185,129,0.12)', color: '#34d399', label: 'Accepté'     },
   };
   const c = cfg[s] ?? { bg: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)', label: s };
@@ -287,10 +287,10 @@ export default function AdminDashboard() {
       >
         {/* Brand */}
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-white text-xs shadow" style={{ background: 'linear-gradient(135deg,#ef4444,#b91c1c)', boxShadow: '0 4px 16px rgba(239,68,68,0.4)' }}>J</div>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-white text-xs shadow" style={{ background: 'linear-gradient(135deg,#0d2a94,#072060)', boxShadow: '0 4px 16px rgba(13,42,148,0.4)' }}>J</div>
           <div className="leading-none">
             <div className="font-black text-white text-sm tracking-tight">JOTUN</div>
-            <div className="text-[9px] font-bold text-red-400 tracking-[0.2em] uppercase">Tamboola Admin</div>
+            <div className="text-[9px] font-bold text-blue-400 tracking-[0.2em] uppercase">Tamboola Admin</div>
           </div>
         </div>
 
@@ -308,15 +308,15 @@ export default function AdminDashboard() {
               Excel
             </button>
             <button onClick={() => exportAs('pdf')}
-              className="px-3 py-1.5 text-xs font-semibold transition-colors text-red-400 hover:text-red-300"
-              style={{ background: 'rgba(239,68,68,0.08)', borderLeft: '1px solid rgba(255,255,255,0.06)' }}>
+              className="px-3 py-1.5 text-xs font-semibold transition-colors text-blue-400 hover:text-blue-300"
+              style={{ background: 'rgba(13,42,148,0.08)', borderLeft: '1px solid rgba(255,255,255,0.06)' }}>
               PDF
             </button>
           </div>
 
           <button
             onClick={logout}
-            className="flex items-center gap-1.5 text-xs text-white/40 hover:text-red-400 transition-colors px-3 py-1.5 rounded-lg"
+            className="flex items-center gap-1.5 text-xs text-white/40 hover:text-blue-400 transition-colors px-3 py-1.5 rounded-lg"
             style={{ border: '1px solid rgba(255,255,255,0.07)' }}
           >
             <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -332,9 +332,9 @@ export default function AdminDashboard() {
         {/* Error banner */}
         {fetchError && (
           <div
-            className="mb-6 rounded-2xl px-5 py-4 flex justify-between items-center text-sm"
-            style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#fca5a5' }}
-          >
+              className="mb-6 rounded-2xl px-5 py-4 flex justify-between items-center text-sm"
+              style={{ background: 'rgba(13,42,148,0.08)', border: '1px solid rgba(13,42,148,0.2)', color: '#9fb3f0' }}
+            >
             <span>{fetchError}</span>
             <button
               onClick={() => { setFetchError(''); fetchStats(); fetchParticipants(page); }}
@@ -378,7 +378,7 @@ export default function AdminDashboard() {
               onKeyDown={e => e.key === 'Enter' && fetchParticipants(1)}
               className="w-full rounded-xl pl-9 pr-3 py-2.5 text-sm text-white placeholder-white/25 outline-none transition-all"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
-              onFocus={e => { e.currentTarget.style.border = '1px solid rgba(239,68,68,0.4)'; }}
+              onFocus={e => { e.currentTarget.style.border = '1px solid rgba(13,42,148,0.4)'; }}
               onBlur={e =>  { e.currentTarget.style.border = '1px solid rgba(255,255,255,0.08)'; }}
             />
           </div>
@@ -388,7 +388,7 @@ export default function AdminDashboard() {
             onChange={e => setStatusFilter(e.target.value)}
             className="rounded-xl px-3 py-2.5 text-sm text-white outline-none appearance-none transition-all"
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', colorScheme: 'dark', minWidth: '140px' }}
-            onFocus={e => { e.currentTarget.style.border = '1px solid rgba(239,68,68,0.4)'; }}
+            onFocus={e => { e.currentTarget.style.border = '1px solid rgba(13,42,148,0.4)'; }}
             onBlur={e =>  { e.currentTarget.style.border = '1px solid rgba(255,255,255,0.08)'; }}
           >
             <option value=""         style={{ background: '#0f0f1c' }}>Tous les statuts</option>
@@ -400,7 +400,7 @@ export default function AdminDashboard() {
           <button
             onClick={() => fetchParticipants(1)}
             className="font-semibold text-sm text-white px-5 py-2.5 rounded-xl transition-all active:scale-95"
-            style={{ background: 'linear-gradient(135deg,#ef4444,#b91c1c)', boxShadow: '0 0 16px rgba(239,68,68,0.3)' }}
+            style={{ background: 'linear-gradient(135deg,#0d2a94,#072060)', boxShadow: '0 0 16px rgba(13,42,148,0.3)' }}
           >
             Filtrer
           </button>

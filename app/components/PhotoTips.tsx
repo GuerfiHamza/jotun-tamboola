@@ -10,7 +10,7 @@ function Receipt({ variant, dark }: { variant: 'good' | 'dark' | 'cut' | 'rotate
   const body = (
     <g>
       <rect x="22" y="10" width="56" height="80" rx="3" fill={paper} stroke={line} strokeWidth="1.5" />
-      <rect x="28" y="17" width="24" height="5" rx="1" fill="#ef4444" />
+      <rect x="28" y="17" width="24" height="5" rx="1" fill="#0d2a94" />
       <rect x="28" y="28" width="44" height="3" rx="1.5" fill={line} />
       <rect x="28" y="35" width="38" height="3" rx="1.5" fill={line} />
       <rect x="28" y="42" width="44" height="3" rx="1.5" fill={line} />
@@ -73,12 +73,12 @@ export default function PhotoTips({ dark = true }: { dark?: boolean }) {
           <div key={t.variant} className="text-center">
             <div
               className="relative rounded-lg overflow-hidden border-2"
-              style={{ borderColor: t.ok ? 'rgba(16,185,129,0.5)' : 'rgba(239,68,68,0.4)' }}
+              style={{ borderColor: t.ok ? 'rgba(16,185,129,0.5)' : 'rgba(13,42,148,0.4)' }}
             >
               <Receipt variant={t.variant} dark={dark} />
               <span
                 className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-black shadow"
-                style={{ background: t.ok ? '#10b981' : '#ef4444' }}
+                style={{ background: t.ok ? '#10b981' : '#0d2a94' }}
                 aria-label={t.ok ? 'Bon exemple' : 'Mauvais exemple'}
               >
                 {t.ok ? '✓' : '✕'}
