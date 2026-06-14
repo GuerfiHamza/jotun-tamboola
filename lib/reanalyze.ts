@@ -1,11 +1,9 @@
 import { db } from '@/lib/db/index';
-import { invoices, participants } from '@/lib/db/schema';
+import { invoices } from '@/lib/db/schema';
 import { eq, and, isNull, notLike, or } from 'drizzle-orm';
 import { analyzeInvoice } from '@/lib/gemini';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
-
-const MIN_AMOUNT = Number(process.env.INVOICE_MIN_AMOUNT ?? 20000);
 
 const MIME: Record<string, string> = {
   jpg: 'image/jpeg', jpeg: 'image/jpeg',
@@ -27,22 +25,18 @@ export async function reanalyzeOne(invoiceId: number) {
 
   const ext = inv.filename.split('.').pop()!.toLowerCase();
   const result = await analyzeInvoice(buffer.toString('base64'), MIME[ext] ?? 'image/jpeg');
-  const accepted = result.amount !== null && result.amount >= MIN_AMOUNT;
 
+  // SECURITY: never auto-approve from a re-analysis either — record the
+  // detected amount and leave it 'pending' for an admin decision.
   await db.update(invoices)
     .set({
       amount_detected: result.amount !== null ? result.amount.toFixed(2) : null,
       gemini_response: result.success ? result.raw.slice(0, 60_000) : `retry_failed: ${result.raw.slice(0, 200)}`,
-      status: accepted ? 'accepted' : 'pending',
+      status: 'pending',
     })
     .where(eq(invoices.id, invoiceId));
 
-  if (accepted) {
-    await db.update(participants)
-      .set({ status: 'approved', updated_at: new Date() })
-      .where(eq(participants.id, inv.participant_id));
-  }
-  return { amount: result.amount, accepted };
+  return { amount: result.amount, accepted: false };
 }
 
 // Re-analyzes invoices whose background analysis never succeeded
@@ -73,22 +67,17 @@ export async function reanalyzeStuck(batch = 3) {
 
     const ext = inv.filename.split('.').pop()!.toLowerCase();
     const result = await analyzeInvoice(buffer.toString('base64'), MIME[ext] ?? 'image/jpeg');
-    const accepted = result.amount !== null && result.amount >= MIN_AMOUNT;
 
+    // SECURITY: record detected amount only — admin approves manually.
     await db.update(invoices)
       .set({
         amount_detected: result.amount !== null ? result.amount.toFixed(2) : null,
         gemini_response: result.success ? result.raw.slice(0, 60_000) : `retry_failed: ${result.raw.slice(0, 200)}`,
-        status: accepted ? 'accepted' : 'pending',
+        status: 'pending',
       })
       .where(eq(invoices.id, inv.id));
 
-    if (accepted) {
-      await db.update(participants)
-        .set({ status: 'approved', updated_at: new Date() })
-        .where(eq(participants.id, inv.participant_id));
-    }
-    results.push({ id: inv.id, amount: result.amount, accepted });
+    results.push({ id: inv.id, amount: result.amount, accepted: false });
   }
 
   if (results.length) console.log('[reanalyze] processed:', results);

@@ -7,7 +7,7 @@ export default {
   dbCredentials: {
     host:     'localhost',
     user:     'root',
-    password: 'HamzaMizou42',
+    // password: 'HamzaMizou42',
     database: 'jotun_tamboola',
   },
 } satisfies Config;

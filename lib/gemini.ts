@@ -12,7 +12,15 @@ const PLAN: { model: string; simple: boolean }[] = [
 // Backoff before each retry (background task -> we can afford minutes)
 const DELAYS_MS = [15_000, 30_000, 60_000, 120_000];
 
-type GeminiResult = { amount: number | null; raw: string; success: boolean; retryAfterMs?: number };
+type GeminiResult = {
+  amount: number | null;
+  raw: string;
+  success: boolean;
+  retryAfterMs?: number;
+  vendor?: string | null;
+  invoice_no?: string | null;
+  date?: string | null;
+};
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 const API_KEYS = [
@@ -83,12 +91,13 @@ WHAT TO EXTRACT — the TOTAL VALUE OF GOODS PURCHASED:
 4. Cross-check: quantity × unit price ≈ line total, and line totals should sum ≈ grand total. If not, re-read.
 
 Respond ONLY with valid JSON, no markdown, no explanation:
-{"found":true,"amount":54000.00,"currency":"DZD","confidence":"high","source":"explicit_total"}
+{"found":true,"amount":54000.00,"currency":"DZD","confidence":"high","source":"explicit_total","vendor":"NOM DU FOURNISSEUR","invoice_no":"FACT-001","date":"2025-01-15"}
 
 "source": "explicit_total" if a total line exists, "sum_of_lines" if you computed it.
 "confidence": "high" if clearly legible, "medium" if handwriting was hard, "low" if any digit is uncertain.
+"vendor": the seller/shop name if printed, else null. "invoice_no": the invoice/receipt number if present, else null. "date": invoice date as YYYY-MM-DD if present, else null.
 
-If nothing is readable: {"found":false,"amount":null,"currency":null,"confidence":"none","source":null}`;
+If nothing is readable: {"found":false,"amount":null,"currency":null,"confidence":"none","source":null,"vendor":null,"invoice_no":null,"date":null}`;
 
   const body = {
     contents: [{
@@ -141,7 +150,15 @@ If nothing is readable: {"found":false,"amount":null,"currency":null,"confidence
     const amount = parsed.found ? Number(parsed.amount) : null;
     const ok = amount !== null && Number.isFinite(amount) && amount >= 0;
     console.log(`[invoice] attempt ${attempt} parsed:`, { found: parsed.found, amount, confidence: parsed.confidence, source: parsed.source });
-    return { amount: ok ? amount : null, raw, success: parsed.found === true && ok };
+    const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : null);
+    return {
+      amount: ok ? amount : null,
+      raw,
+      success: parsed.found === true && ok,
+      vendor: str(parsed.vendor),
+      invoice_no: str(parsed.invoice_no),
+      date: str(parsed.date),
+    };
   } catch {
     console.log(`[invoice] attempt ${attempt} JSON parse failed:`, raw.slice(0, 200));
     return { amount: null, raw: raw.slice(0, 1000), success: false };

@@ -85,6 +85,24 @@ if (!form.invoice) { setErrorMsg('Veuillez joindre votre facture Jotun.'); retur
 
     setLoading(true);
     try {
+      // Validate the invoice file FIRST — so a duplicate/invalid file never
+      // creates an orphaned participant. Nothing is stored at this step.
+      if (form.invoice) {
+        const checkFd = new FormData();
+        checkFd.append('invoice', form.invoice);
+        const checkRes = await fetch('/api/check-invoice', {
+          method: 'POST',
+          headers: { 'x-requested-with': 'XMLHttpRequest' },
+          body: checkFd,
+        });
+        const checkData = await checkRes.json() as { error?: string; ok?: boolean };
+        if (!checkRes.ok) {
+          setErrorMsg(checkData.error ?? "Cette facture ne peut pas être acceptée.");
+          setLoading(false);
+          return;
+        }
+      }
+
       const regRes = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-requested-with': 'XMLHttpRequest' },
@@ -95,9 +113,24 @@ if (!form.invoice) { setErrorMsg('Veuillez joindre votre facture Jotun.'); retur
           is_painter: form.is_painter,
         }),
       });
-      const regData = await regRes.json() as { error?: string; participantId?: number; requiresInvoice?: boolean };
-      if (!regRes.ok) { setErrorMsg(regData.error ?? "Erreur lors de l'inscription."); setLoading(false); return; }
+      const regData = await regRes.json() as { error?: string; participantId?: number; requiresInvoice?: boolean; alreadyRegistered?: boolean; hasInvoice?: boolean };
+      if (!regRes.ok) {
+        // Duplicate phone: stop here, never upload an invoice against an
+        // already-registered participant.
+        if (regData.alreadyRegistered) {
+          setErrorMsg(
+            regData.hasInvoice
+              ? 'Ce numéro est déjà inscrit et a déjà soumis une facture.'
+              : 'Ce numéro de téléphone est déjà inscrit.'
+          );
+        } else {
+          setErrorMsg(regData.error ?? "Erreur lors de l'inscription.");
+        }
+        setLoading(false);
+        return;
+      }
 
+      // Only proceed to upload when registration created a NEW participant.
       if (form.invoice && regData.participantId) {
   const fd = new FormData();
   fd.append('invoice', form.invoice);

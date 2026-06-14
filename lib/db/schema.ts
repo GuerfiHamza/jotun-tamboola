@@ -19,6 +19,11 @@ export const invoices = mysqlTable('invoices', {
   original_name:    varchar('original_name', { length: 255 }).notNull(),
   amount_detected:  decimal('amount_detected', { precision: 12, scale: 2 }),
   gemini_response:  text('gemini_response'),
+  // De-duplication signals
+  file_hash:        varchar('file_hash', { length: 64 }),        // #6 SHA-256 of raw bytes
+  perceptual_hash:  varchar('perceptual_hash', { length: 16 }),  // #7 64-bit dHash (hex)
+  content_key:      varchar('content_key', { length: 255 }),     // #8 vendor|invoice_no|date|amount
+  duplicate_flag:   tinyint('duplicate_flag').default(0).notNull(), // 1 = needs admin review (soft dup)
   status:           mysqlEnum('status', ['pending', 'accepted', 'rejected']).default('pending').notNull(),
   attempt:          int('attempt').default(1),
   uploaded_at:      timestamp('uploaded_at').defaultNow(),

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/index';
-import { participants } from '@/lib/db/schema';
-import { eq } from 'drizzle-orm';
+import { participants, invoices } from '@/lib/db/schema';
+import { eq, count } from 'drizzle-orm';
 import { checkCsrf } from '@/lib/csrf';
 import { checkRateLimit } from '@/lib/rateLimit';
+import { verifyTurnstile } from '@/lib/turnstile';
 
 const WILAYAS = new Set([
   'Adrar','Chlef','Laghouat','Oum El Bouaghi','Batna','Béjaïa','Biskra','Béchar',
@@ -39,11 +40,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Trop de tentatives. Réessayez plus tard.' }, { status: 429 });
   }
 
-  let body: { full_name?: unknown; phone?: unknown; wilaya?: unknown; is_painter?: unknown };
+  let body: { full_name?: unknown; phone?: unknown; wilaya?: unknown; is_painter?: unknown; turnstileToken?: unknown };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Corps de requête invalide.' }, { status: 400 });
+  }
+
+  // #5 Bot protection (no-op if TURNSTILE_SECRET_KEY is unset)
+  if (!(await verifyTurnstile(body.turnstileToken, ip))) {
+    return NextResponse.json({ error: 'Vérification anti-robot échouée. Réessayez.' }, { status: 403 });
   }
 
   const full_name = typeof body.full_name === 'string' ? body.full_name.trim() : '';
@@ -63,6 +69,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Wilaya invalide.' }, { status: 400 });
   }
 
+  // Single source of truth = the unique phone index. We still do a fast
+  // pre-check to return a friendly state, but the INSERT catch below is what
+  // actually prevents duplicates (and the race between two simultaneous POSTs).
   const existing = await db
     .select({ id: participants.id })
     .from(participants)
@@ -70,7 +79,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     .limit(1);
 
   if (existing.length > 0) {
-    return NextResponse.json({ error: 'Ce numéro de téléphone est déjà inscrit.' }, { status: 409 });
+    const [{ value: invoiceCount }] = await db
+      .select({ value: count() })
+      .from(invoices)
+      .where(eq(invoices.participant_id, existing[0].id));
+    return NextResponse.json(
+      {
+        error: 'Ce numéro de téléphone est déjà inscrit.',
+        alreadyRegistered: true,
+        hasInvoice: Number(invoiceCount) > 0,
+      },
+      { status: 409 }
+    );
   }
 
   try {
@@ -88,9 +108,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({ success: true, participantId: inserted.id, requiresInvoice: true });
   } catch (e: unknown) {
-    // Race on the unique phone index → friendly 409 instead of a 500
+    // Race on the unique phone index → friendly 409 instead of a 500.
+    // No participantId is returned, so the client cannot proceed to upload.
     if (typeof e === 'object' && e !== null && 'code' in e && (e as { code: string }).code === 'ER_DUP_ENTRY') {
-      return NextResponse.json({ error: 'Ce numéro de téléphone est déjà inscrit.' }, { status: 409 });
+      return NextResponse.json(
+        { error: 'Ce numéro de téléphone est déjà inscrit.', alreadyRegistered: true },
+        { status: 409 }
+      );
     }
     return NextResponse.json({ error: 'Erreur serveur. Réessayez.' }, { status: 500 });
   }
