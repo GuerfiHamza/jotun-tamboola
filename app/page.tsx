@@ -27,8 +27,7 @@ const prizes = [
     icon: (
       <svg viewBox="0 0 32 32" fill="none" className="w-7 h-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <rect x="7" y="2" width="18" height="28" rx="2"/>
-        <path d="M7 14h18"/>
-        <path d="M13 8v4M13 19v6"/>
+        <path d="M7 14h18M13 8v4M13 19v6"/>
       </svg>
     ),
   },
@@ -55,8 +54,7 @@ const prizes = [
     icon: (
       <svg viewBox="0 0 32 32" fill="none" className="w-7 h-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="9" width="26" height="11" rx="2"/>
-        <path d="M8 24c0 3 1 4 1 4M16 24v5M24 24c0 3-1 4-1 4"/>
-        <path d="M8 14h16M10 12h2"/>
+        <path d="M8 24c0 3 1 4 1 4M16 24v5M24 24c0 3-1 4-1 4M8 14h16M10 12h2"/>
       </svg>
     ),
   },
@@ -68,10 +66,8 @@ const prizes = [
     icon: (
       <svg viewBox="0 0 32 32" fill="none" className="w-7 h-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <ellipse cx="16" cy="24" rx="10" ry="5"/>
-        <path d="M16 19V7"/>
+        <path d="M16 19V7M10 7h12M9 19c-3-2-3-6 0-8"/>
         <circle cx="16" cy="24" r="3" fill="currentColor" opacity="0.15"/>
-        <path d="M10 7h12"/>
-        <path d="M9 19c-3-2-3-6 0-8"/>
       </svg>
     ),
   },
@@ -91,16 +87,16 @@ const prizes = [
 ];
 
 const howSteps = [
-  { n: '01', title: 'Inscrivez-vous',      sub: 'Remplissez le formulaire en quelques minutes avec vos informations.' },
+  { n: '01', title: 'Inscrivez-vous',       sub: 'Remplissez le formulaire en quelques minutes avec vos informations.' },
   { n: '02', title: 'Soumettez une facture', sub: 'Les peintres uploadent une facture Jotun ≥ 20 000 DA pour valider.' },
   { n: '03', title: 'Entrez dans le tirage', sub: 'Votre dossier est validé et vous participez automatiquement.' },
-  { n: '04', title: 'Gagnez un prix',       sub: "Les gagnants sont contactés directement par l'équipe Jotun." },
+  { n: '04', title: 'Gagnez un prix',        sub: "Les gagnants sont contactés directement par l'équipe Jotun." },
 ];
 
 const faqs = [
-  { q: 'Qui peut participer ?',              a: "Tout acheteur de produits Jotun en Algérie. Les peintres en bâtiment doivent fournir une facture justificative." },
-  { q: 'Quelle est la date limite ?',        a: "Les inscriptions sont ouvertes jusqu'à la fin de la campagne. Le tirage au sort sera annoncé sur nos canaux officiels." },
-  { q: "Comment saurai-je si j'ai gagné ?",  a: "L'équipe Jotun vous contactera directement par téléphone au numéro fourni lors de l'inscription." },
+  { q: 'Qui peut participer ?',                 a: "Tout acheteur de produits Jotun en Algérie. Les peintres en bâtiment doivent fournir une facture justificative." },
+  { q: 'Quelle est la date limite ?',           a: "Les inscriptions sont ouvertes jusqu'à la fin de la campagne. Le tirage au sort sera annoncé sur nos canaux officiels." },
+  { q: "Comment saurai-je si j'ai gagné ?",     a: "L'équipe Jotun vous contactera directement par téléphone au numéro fourni lors de l'inscription." },
   { q: 'Puis-je soumettre plusieurs factures ?', a: "Oui, les peintres peuvent soumettre plusieurs factures. Seule la facture acceptée (≥ 20 000 DA) compte pour la participation." },
 ];
 
@@ -116,20 +112,95 @@ const WILAYAS = [
   "El M'Ghair",'El Meniaa',
 ];
 
+// ── Star field data (module-level so Math.random runs once, not on render) ───
+
+const STARS = Array.from({ length: 55 }, (_, i) => ({
+  id: i,
+  x:     Math.random() * 100,
+  y:     Math.random() * 100,
+  size:  Math.random() * 1.8 + 0.6,
+  delay: Math.random() * 6,
+  dur:   2.5 + Math.random() * 4,
+}));
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type FormState = {
-  full_name: string;
-  phone:     string;
-  wilaya:    string;
-  is_painter: boolean;
-  consent:   boolean;
-  invoice:   File | null;
+  full_name: string; phone: string; wilaya: string;
+  is_painter: boolean; consent: boolean; invoice: File | null;
 };
-
 type Step = 'form' | 'done';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Theme ─────────────────────────────────────────────────────────────────────
+
+function getTheme(dark: boolean) {
+  if (dark) return {
+    page:        '#08080f',
+    section:     '#0a0a14',
+    card:        '#0f0f1c',
+    cardAlt:     '#12121f',
+    glass:       'rgba(255,255,255,0.04)',
+    glassHard:   'rgba(255,255,255,0.07)',
+    input:       'rgba(255,255,255,0.05)',
+    inputFocus:  'rgba(255,255,255,0.08)',
+    border:      'rgba(255,255,255,0.07)',
+    borderSub:   'rgba(255,255,255,0.05)',
+    borderFocus: 'rgba(239,68,68,0.45)',
+    text:        '#f9fafb',
+    sub:         'rgba(255,255,255,0.55)',
+    muted:       'rgba(255,255,255,0.35)',
+    faint:       'rgba(255,255,255,0.15)',
+    navBg:       'rgba(8,8,15,0.92)',
+    navBorder:   'rgba(255,255,255,0.06)',
+    foot:        '#060609',
+    inputText:   '#ffffff',
+    placeholder: 'rgba(255,255,255,0.2)',
+    selectBg:    '#0f0f1c',
+    pill:        'rgba(255,255,255,0.04)',
+    orbA:        'rgba(239,68,68,0.08)',
+    orbB:        'rgba(239,68,68,0.05)',
+    orbC:        'rgba(245,158,11,0.04)',
+    gridLine:    'rgba(255,255,255,0.025)',
+    ringA:       'rgba(255,255,255,0.025)',
+    ringB:       'rgba(255,255,255,0.015)',
+    isDark:      true,
+  } as const;
+  return {
+    page:        '#f3f3fa',
+    section:     '#ebebf5',
+    card:        '#ffffff',
+    cardAlt:     '#f8f8fd',
+    glass:       'rgba(0,0,0,0.025)',
+    glassHard:   'rgba(0,0,0,0.06)',
+    input:       'rgba(0,0,0,0.04)',
+    inputFocus:  'rgba(0,0,0,0.07)',
+    border:      'rgba(0,0,0,0.09)',
+    borderSub:   'rgba(0,0,0,0.05)',
+    borderFocus: 'rgba(239,68,68,0.5)',
+    text:        '#0d0d1a',
+    sub:         'rgba(0,0,0,0.6)',
+    muted:       'rgba(0,0,0,0.4)',
+    faint:       'rgba(0,0,0,0.2)',
+    navBg:       'rgba(243,243,250,0.95)',
+    navBorder:   'rgba(0,0,0,0.08)',
+    foot:        '#e6e6f2',
+    inputText:   '#0d0d1a',
+    placeholder: 'rgba(0,0,0,0.3)',
+    selectBg:    '#ffffff',
+    pill:        'rgba(0,0,0,0.03)',
+    orbA:        'rgba(239,68,68,0.06)',
+    orbB:        'rgba(239,68,68,0.04)',
+    orbC:        'rgba(245,158,11,0.03)',
+    gridLine:    'rgba(0,0,0,0.04)',
+    ringA:       'rgba(0,0,0,0.04)',
+    ringB:       'rgba(0,0,0,0.025)',
+    isDark:      false,
+  } as const;
+}
+
+type Theme = ReturnType<typeof getTheme>;
+
+// ── Hooks ─────────────────────────────────────────────────────────────────────
 
 function useInView(threshold = 0.12) {
   const ref = useRef<HTMLDivElement>(null);
@@ -145,41 +216,109 @@ function useInView(threshold = 0.12) {
   return { ref, visible };
 }
 
-function reveal(visible: boolean, delay = 0, x = 0) {
+function reveal(visible: boolean, delay = 0, x = 0): React.CSSProperties {
   return {
-    opacity: visible ? 1 : 0,
-    transform: visible
-      ? 'translateY(0px) translateX(0px)'
-      : `translateY(36px) translateX(${x}px)`,
+    opacity:    visible ? 1 : 0,
+    transform:  visible ? 'translateY(0px) translateX(0px)' : `translateY(36px) translateX(${x}px)`,
     transition: `opacity 0.65s ease ${delay}ms, transform 0.65s ease ${delay}ms`,
-  } as React.CSSProperties;
+  };
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+function useCountUp(target: number, visible: boolean, duration = 1400) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!visible) return;
+    const start = Date.now();
+    const tick = () => {
+      const elapsed = Date.now() - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.round(eased * target));
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, [visible, target, duration]);
+  return count;
+}
 
-function PrizeCard({ p, index, visible }: { p: typeof prizes[0]; index: number; visible: boolean }) {
+// ── Components ────────────────────────────────────────────────────────────────
+
+function StarField() {
+  return (
+    <div className="absolute inset-0 pointer-events-none" aria-hidden>
+      {STARS.map(s => (
+        <div
+          key={s.id}
+          className="absolute rounded-full bg-white"
+          style={{
+            left: `${s.x}%`, top: `${s.y}%`,
+            width: `${s.size}px`, height: `${s.size}px`,
+            opacity: 0.1,
+            animation: `twinkle ${s.dur}s ease-in-out ${s.delay}s infinite`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function RippleButton({
+  children, onClick, style, className,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  style?: React.CSSProperties;
+  className?: string;
+}) {
+  const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
+  function handleClick(e: React.MouseEvent<HTMLButtonElement>) {
+    const r = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - r.left;
+    const y = e.clientY - r.top;
+    const id = Date.now();
+    setRipples(prev => [...prev, { id, x, y }]);
+    setTimeout(() => setRipples(prev => prev.filter(rp => rp.id !== id)), 800);
+    onClick?.();
+  }
+  return (
+    <button onClick={handleClick} style={style} className={`relative overflow-hidden ${className ?? ''}`}>
+      {children}
+      {ripples.map(rp => (
+        <span
+          key={rp.id}
+          className="absolute rounded-full bg-white/20 pointer-events-none"
+          style={{
+            width: 8, height: 8,
+            left: rp.x - 4, top: rp.y - 4,
+            animation: 'rippleOut 0.8s ease-out forwards',
+          }}
+        />
+      ))}
+    </button>
+  );
+}
+
+function PrizeCard({ p, index, visible, th }: { p: typeof prizes[0]; index: number; visible: boolean; th: Theme }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const isGrand = index === 0;
 
   function onMove(e: React.MouseEvent) {
-    const el = cardRef.current;
-    if (!el) return;
+    const el = cardRef.current; if (!el) return;
     const r = el.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width  - 0.5;
     const y = (e.clientY - r.top)  / r.height - 0.5;
-    el.style.transform = `perspective(900px) rotateX(${-y * 11}deg) rotateY(${x * 11}deg) translateY(-6px)`;
+    el.style.transform = `perspective(900px) rotateX(${-y * 11}deg) rotateY(${x * 11}deg) translateY(-6px) scale(1.02)`;
     el.style.transition = 'transform 0.08s ease';
   }
 
   function onLeave() {
-    const el = cardRef.current;
-    if (!el) return;
-    el.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0)';
+    const el = cardRef.current; if (!el) return;
+    el.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0) scale(1)';
     el.style.transition = 'transform 0.5s ease';
   }
 
   return (
-    <div style={reveal(visible, index * 90)}>
+    <div style={{ ...reveal(visible, index * 90), animation: visible ? `bounceIn 0.6s cubic-bezier(0.34,1.56,0.64,1) ${index * 90}ms both` : undefined }}>
       <div
         ref={cardRef}
         onMouseMove={onMove}
@@ -187,51 +326,38 @@ function PrizeCard({ p, index, visible }: { p: typeof prizes[0]; index: number; 
         className="relative h-full cursor-default"
         style={{ transformStyle: 'preserve-3d' }}
       >
-        {/* Glow halo */}
         {isGrand && (
           <div
             className="absolute -inset-2 rounded-3xl blur-xl pointer-events-none"
-            style={{ background: p.gradient, opacity: 0.35 }}
+            style={{ background: p.gradient, opacity: th.isDark ? 0.35 : 0.25 }}
           />
         )}
-
-        {/* Card border */}
         <div
           className="relative rounded-2xl p-px h-full"
-          style={{
-            background: isGrand ? p.gradient : `rgba(255,255,255,0.07)`,
-          }}
+          style={{ background: isGrand ? p.gradient : th.glassHard }}
         >
-          {/* Card body */}
           <div
-            className="relative bg-[#0f0f1c] rounded-2xl p-6 h-full flex flex-col gap-4"
-            style={{ boxShadow: `0 24px 64px ${p.glow}` }}
+            className="relative rounded-2xl p-6 h-full flex flex-col gap-4"
+            style={{ background: th.card, boxShadow: `0 24px 64px ${p.glow}` }}
           >
-            {/* Shimmer sweep on grand prize */}
             {isGrand && (
-              <div
-                className="absolute inset-0 rounded-2xl pointer-events-none overflow-hidden"
-                aria-hidden
-              >
+              <div className="absolute inset-0 rounded-2xl pointer-events-none overflow-hidden" aria-hidden>
                 <div
                   className="absolute inset-0"
                   style={{
-                    background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.06) 50%, transparent 60%)',
+                    background: 'linear-gradient(105deg,transparent 40%,rgba(255,255,255,0.06) 50%,transparent 60%)',
                     backgroundSize: '200% 100%',
                     animation: 'shimmer 3s linear infinite',
                   }}
                 />
               </div>
             )}
-
-            {/* Icon badge */}
             <div
               className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg"
               style={{ background: p.gradient, color: '#fff', boxShadow: `0 8px 24px ${p.glow}` }}
             >
               {p.icon}
             </div>
-
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span
@@ -241,12 +367,12 @@ function PrizeCard({ p, index, visible }: { p: typeof prizes[0]; index: number; 
                   {p.rank}
                 </span>
                 {isGrand && p.badge && (
-                  <span className="text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300">
+                  <span className="text-[10px] font-black tracking-widest uppercase px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-500">
                     {p.badge}
                   </span>
                 )}
               </div>
-              <div className="text-white font-black text-xl leading-tight">{p.label}</div>
+              <div className="text-lg font-black leading-tight" style={{ color: th.text }}>{p.label}</div>
             </div>
           </div>
         </div>
@@ -255,11 +381,17 @@ function PrizeCard({ p, index, visible }: { p: typeof prizes[0]; index: number; 
   );
 }
 
-function FaqItem({ f, index, visible }: { f: typeof faqs[0]; index: number; visible: boolean }) {
+function FaqItem({ f, index, visible, th }: { f: typeof faqs[0]; index: number; visible: boolean; th: Theme }) {
   const [open, setOpen] = useState(false);
   return (
     <div style={reveal(visible, index * 80)}>
-      <div className="border border-white/8 rounded-2xl overflow-hidden transition-colors hover:border-red-500/25">
+      <div
+        className="rounded-2xl overflow-hidden transition-all duration-300"
+        style={{
+          border: `1px solid ${open ? 'rgba(239,68,68,0.3)' : th.border}`,
+          background: open ? (th.isDark ? 'rgba(239,68,68,0.04)' : 'rgba(239,68,68,0.02)') : 'transparent',
+        }}
+      >
         <button
           className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left"
           onClick={() => setOpen(o => !o)}
@@ -269,14 +401,19 @@ function FaqItem({ f, index, visible }: { f: typeof faqs[0]; index: number; visi
             <span className="text-red-500 font-black text-xs tabular-nums flex-shrink-0 w-6">
               {String(index + 1).padStart(2, '0')}
             </span>
-            <span className="font-semibold text-white text-sm">{f.q}</span>
+            <span className="font-semibold text-sm" style={{ color: th.text }}>{f.q}</span>
           </div>
           <div
-            className="w-7 h-7 rounded-full border border-white/10 flex items-center justify-center flex-shrink-0"
-            style={{ transition: 'transform 0.3s ease, background 0.3s ease', transform: open ? 'rotate(45deg)' : 'rotate(0deg)', background: open ? 'rgba(239,68,68,0.15)' : 'transparent' }}
+            className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{
+              border: `1px solid ${open ? 'rgba(239,68,68,0.4)' : th.border}`,
+              background: open ? 'rgba(239,68,68,0.15)' : 'transparent',
+              transform: open ? 'rotate(45deg)' : 'rotate(0deg)',
+              transition: 'transform 0.3s ease, background 0.3s ease, border-color 0.3s ease',
+            }}
             aria-hidden
           >
-            <svg className={`w-3.5 h-3.5 ${open ? 'text-red-400' : 'text-white/40'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg className="w-3.5 h-3.5" style={{ color: open ? '#f87171' : th.muted }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16M4 12h16" />
             </svg>
           </div>
@@ -285,31 +422,95 @@ function FaqItem({ f, index, visible }: { f: typeof faqs[0]; index: number; visi
           className="overflow-hidden"
           style={{ maxHeight: open ? '240px' : '0', transition: 'max-height 0.4s ease, opacity 0.4s ease', opacity: open ? 1 : 0 }}
         >
-          <p className="px-6 pb-6 text-white/50 text-sm leading-relaxed pl-16">{f.a}</p>
+          <p className="px-6 pb-6 text-sm leading-relaxed pl-16" style={{ color: th.sub }}>{f.a}</p>
         </div>
       </div>
     </div>
   );
 }
 
+function StatChip({ n, label, visible, th, delay = 0 }: { n: string; label: string; visible: boolean; th: Theme; delay?: number }) {
+  const isNum = !isNaN(parseInt(n));
+  const target = isNum ? parseInt(n) : 0;
+  const count = useCountUp(target, visible, 1600);
+  const display = isNum ? (n.includes('%') ? `${count}%` : n.includes('K') ? (count < 20 ? `${count}K` : `${count}K`) : String(count)) : n;
+
+  return (
+    <div
+      className="rounded-2xl p-4"
+      style={{
+        border: `1px solid ${th.border}`,
+        background: th.glass,
+        backdropFilter: 'blur(8px)',
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.9)',
+        transition: `opacity 0.6s ease ${delay}ms, transform 0.6s cubic-bezier(0.34,1.56,0.64,1) ${delay}ms`,
+      }}
+    >
+      <div className="font-black text-xl" style={{ color: th.text, animation: visible ? `numberPop 0.5s cubic-bezier(0.34,1.56,0.64,1) ${delay + 200}ms both` : undefined }}>
+        {display}
+      </div>
+      <div className="text-[11px] mt-0.5" style={{ color: th.muted }}>{label}</div>
+    </div>
+  );
+}
+
+function ThemeToggle({ dark, onToggle }: { dark: boolean; onToggle: () => void }) {
+  return (
+    <button
+      onClick={onToggle}
+      className="relative w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-90"
+      style={{
+        background: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)',
+        border: `1px solid ${dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+      }}
+      aria-label={dark ? 'Activer le thème clair' : 'Activer le thème sombre'}
+    >
+      <div style={{ animation: 'themeSwitch 0.4s ease both' }} key={dark ? 'moon' : 'sun'}>
+        {dark ? (
+          <svg className="w-4.5 h-4.5 text-amber-300" style={{ width: 18, height: 18 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>
+          </svg>
+        ) : (
+          <svg className="w-4.5 h-4.5 text-amber-500" style={{ width: 18, height: 18 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+          </svg>
+        )}
+      </div>
+    </button>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
-  const formRef = useRef<HTMLDivElement>(null);
-  const [form, setForm] = useState<FormState>({
-    full_name: '', phone: '', wilaya: '', is_painter: false, consent: false, invoice: null,
-  });
+  const formRef   = useRef<HTMLDivElement>(null);
+  const [form, setForm]     = useState<FormState>({ full_name: '', phone: '', wilaya: '', is_painter: false, consent: false, invoice: null });
   const [step,         setStep]         = useState<Step>('form');
   const [errorMsg,     setErrorMsg]     = useState('');
   const [loading,      setLoading]      = useState(false);
   const [uploadResult, setUploadResult] = useState<{ accepted: boolean; message: string } | null>(null);
   const [scrolled,     setScrolled]     = useState(false);
+  const [dark, setDark] = useState<boolean>(
+    () => typeof window === 'undefined' || localStorage.getItem('jotun-theme') !== 'light'
+  );
 
-  const { ref: prizesRef,  visible: prizesVisible  } = useInView();
-  const { ref: stepsRef,   visible: stepsVisible   } = useInView();
-  const { ref: faqRef,     visible: faqVisible     } = useInView();
+  const { ref: prizesRef,    visible: prizesVisible    } = useInView();
+  const { ref: stepsRef,     visible: stepsVisible     } = useInView();
+  const { ref: faqRef,       visible: faqVisible       } = useInView();
   const { ref: formTitleRef, visible: formTitleVisible } = useInView();
+  const { ref: statsRef,     visible: statsVisible     } = useInView();
 
+  const th = getTheme(dark);
+
+  // Sync theme to DOM + localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('jotun-theme', dark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  }, [dark]);
+
+  // Scroll-triggered navbar
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 60);
     window.addEventListener('scroll', fn, { passive: true });
@@ -325,19 +526,18 @@ export default function LandingPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrorMsg('');
-
     if (!form.full_name.trim()) { setErrorMsg('Veuillez entrer votre nom complet.'); return; }
     if (!form.phone.trim())     { setErrorMsg('Veuillez entrer votre numéro de téléphone.'); return; }
     let phone = form.phone.replace(/[\s.-]/g, '');
-    if (phone.startsWith('+213'))  phone = phone.slice(4);
+    if (phone.startsWith('+213'))    phone = phone.slice(4);
     else if (phone.startsWith('00213')) phone = phone.slice(5);
     if (phone.startsWith('0') && phone.length === 11) phone = phone.slice(1);
     if (/^[2-7]\d{8}$/.test(phone)) phone = '0' + phone;
     if (!/^0[2-7]\d{8}$/.test(phone)) { setErrorMsg('Numéro de téléphone algérien invalide (ex : 0550123456 ou +213550123456).'); return; }
-    if (!form.wilaya)   { setErrorMsg('Veuillez sélectionner votre wilaya.'); return; }
+    if (!form.wilaya)  { setErrorMsg('Veuillez sélectionner votre wilaya.'); return; }
     if (form.is_painter && !form.invoice) { setErrorMsg('Veuillez joindre votre facture Jotun.'); return; }
-    if (!form.consent)  { setErrorMsg('Veuillez accepter les conditions de participation.'); return; }
-    if (!form.invoice)  { setErrorMsg('Veuillez joindre votre facture Jotun.'); return; }
+    if (!form.consent) { setErrorMsg('Veuillez accepter les conditions de participation.'); return; }
+    if (!form.invoice) { setErrorMsg('Veuillez joindre votre facture Jotun.'); return; }
 
     setLoading(true);
     try {
@@ -348,7 +548,6 @@ export default function LandingPage() {
         const checkData = await checkRes.json() as { error?: string; ok?: boolean };
         if (!checkRes.ok) { setErrorMsg(checkData.error ?? "Cette facture ne peut pas être acceptée."); setLoading(false); return; }
       }
-
       const regRes  = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-requested-with': 'XMLHttpRequest' }, body: JSON.stringify({ full_name: form.full_name.trim(), phone, wilaya: form.wilaya, is_painter: form.is_painter }) });
       const regData = await regRes.json() as { error?: string; participantId?: number; requiresInvoice?: boolean; alreadyRegistered?: boolean; hasInvoice?: boolean };
       if (!regRes.ok) {
@@ -357,10 +556,8 @@ export default function LandingPage() {
         } else {
           setErrorMsg(regData.error ?? "Erreur lors de l'inscription.");
         }
-        setLoading(false);
-        return;
+        setLoading(false); return;
       }
-
       if (form.invoice && regData.participantId) {
         const fd = new FormData();
         fd.append('invoice', form.invoice);
@@ -370,7 +567,6 @@ export default function LandingPage() {
         if (!upRes.ok) { setErrorMsg(upData.error ?? "Erreur lors de l'envoi de la facture."); setLoading(false); return; }
         setUploadResult({ accepted: upData.accepted === true, message: upData.message ?? '' });
       }
-
       setStep('done');
     } catch {
       setErrorMsg('Une erreur réseau est survenue. Veuillez réessayer.');
@@ -382,21 +578,20 @@ export default function LandingPage() {
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <main className="min-h-screen bg-[#08080f] text-white overflow-x-hidden">
+    <main className="min-h-screen overflow-x-hidden" style={{ background: th.page, color: th.text, transition: 'background 0.3s ease, color 0.3s ease' }}>
 
-      {/* ── Navbar ─────────────────────────────────────────────────────────── */}
+      {/* ── Navbar ───────────────────────────────────────────────────────── */}
       <nav
         className="fixed top-0 left-0 right-0 z-50"
         style={{
-          background: scrolled ? 'rgba(8,8,15,0.92)' : 'transparent',
+          background:    scrolled ? th.navBg : 'transparent',
           backdropFilter: scrolled ? 'blur(20px)' : 'none',
-          borderBottom: scrolled ? '1px solid rgba(255,255,255,0.06)' : '1px solid transparent',
-          boxShadow: scrolled ? '0 8px 40px rgba(0,0,0,0.5)' : 'none',
-          transition: 'background 0.4s, backdrop-filter 0.4s, border-color 0.4s, box-shadow 0.4s',
+          borderBottom:  scrolled ? `1px solid ${th.navBorder}` : '1px solid transparent',
+          boxShadow:     scrolled ? `0 8px 40px ${th.isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.08)'}` : 'none',
+          transition:    'background 0.4s, backdrop-filter 0.4s, border-color 0.4s, box-shadow 0.4s',
         }}
       >
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center gap-3">
-          {/* Logo */}
           <div className="flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-white text-base shadow-lg"
@@ -405,95 +600,79 @@ export default function LandingPage() {
               J
             </div>
             <div className="leading-none">
-              <div className="font-black text-white text-sm tracking-tight">JOTUN</div>
+              <div className="font-black text-sm tracking-tight" style={{ color: th.text }}>JOTUN</div>
               <div className="text-[10px] font-bold text-red-400 tracking-[0.2em] uppercase">Tamboola</div>
             </div>
           </div>
 
-          {/* Nav links */}
-          <div className="ml-auto flex items-center gap-8">
-            <a href="#prizes" className="text-sm text-white/45 hover:text-white transition-colors hidden md:block">Prix</a>
-            <a href="#how"    className="text-sm text-white/45 hover:text-white transition-colors hidden md:block">Comment jouer</a>
-            <a href="#faq"    className="text-sm text-white/45 hover:text-white transition-colors hidden md:block">FAQ</a>
-            <button
+          <div className="ml-auto flex items-center gap-6">
+            <a href="#prizes" className="text-sm transition-colors hidden md:block" style={{ color: th.muted }} onMouseEnter={e => (e.currentTarget.style.color = th.text)} onMouseLeave={e => (e.currentTarget.style.color = th.muted)}>Prix</a>
+            <a href="#how"    className="text-sm transition-colors hidden md:block" style={{ color: th.muted }} onMouseEnter={e => (e.currentTarget.style.color = th.text)} onMouseLeave={e => (e.currentTarget.style.color = th.muted)}>Comment jouer</a>
+            <a href="#faq"    className="text-sm transition-colors hidden md:block" style={{ color: th.muted }} onMouseEnter={e => (e.currentTarget.style.color = th.text)} onMouseLeave={e => (e.currentTarget.style.color = th.muted)}>FAQ</a>
+            <ThemeToggle dark={dark} onToggle={() => setDark(d => !d)} />
+            <RippleButton
               onClick={scrollToForm}
-              className="text-sm font-bold text-white px-5 py-2.5 rounded-xl transition-all active:scale-95"
-              style={{ background: 'linear-gradient(135deg,#ef4444,#b91c1c)', boxShadow: '0 0 20px rgba(239,68,68,0.35)' }}
+              className="text-sm font-bold text-white px-5 rounded-xl transition-all active:scale-95"
+              style={{ background: 'linear-gradient(135deg,#ef4444,#b91c1c)', boxShadow: '0 0 20px rgba(239,68,68,0.35)', padding: '0.6rem 1.25rem' }}
             >
               Participer
-            </button>
+            </RippleButton>
           </div>
         </div>
       </nav>
 
-      {/* ── Hero ───────────────────────────────────────────────────────────── */}
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section className="relative min-h-screen flex items-center justify-center px-6 overflow-hidden">
-
-        {/* Background */}
         <div className="absolute inset-0" aria-hidden>
-          {/* Radial gradient */}
-          <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(239,68,68,0.18) 0%, transparent 70%)' }} />
-          {/* Grid */}
+          <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse 80% 60% at 50% -10%, rgba(239,68,68,${th.isDark ? '0.18' : '0.1'}) 0%, transparent 70%)` }} />
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px)',
+              backgroundImage: `linear-gradient(${th.gridLine} 1px,transparent 1px),linear-gradient(90deg,${th.gridLine} 1px,transparent 1px)`,
               backgroundSize: '64px 64px',
             }}
           />
-          {/* Floating orbs */}
-          <div className="absolute top-1/4 left-[15%] w-[480px] h-[480px] rounded-full blur-[100px] animate-float"   style={{ background: 'rgba(239,68,68,0.07)' }} />
-          <div className="absolute bottom-1/4 right-[10%] w-[380px] h-[380px] rounded-full blur-[80px] animate-float-alt"   style={{ background: 'rgba(239,68,68,0.05)' }} />
-          <div className="absolute top-2/3 left-1/2 w-[300px] h-[300px] rounded-full blur-[80px]" style={{ background: 'rgba(245,158,11,0.04)', animation: 'float 11s ease-in-out infinite 3s' }} />
-          {/* Rotating ring */}
+          <StarField />
+          {/* Morphing orbs */}
+          <div className="absolute top-1/4 left-[15%] w-[480px] h-[480px] blur-[100px]" style={{ background: th.orbA, animation: 'float 6s ease-in-out infinite, morphBlob 9s ease-in-out infinite' }} />
+          <div className="absolute bottom-1/4 right-[10%] w-[380px] h-[380px] blur-[80px]" style={{ background: th.orbB, animation: 'floatAlt 9s ease-in-out infinite, morphBlob 12s ease-in-out 3s infinite reverse' }} />
+          <div className="absolute top-2/3 left-1/2 w-[300px] h-[300px] rounded-full blur-[80px]" style={{ background: th.orbC, animation: 'float 11s ease-in-out 3s infinite' }} />
+          {/* Rotating rings */}
           <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full border border-white/[0.025] animate-rotate-slow"
-            style={{ borderStyle: 'dashed' }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full animate-rotate-slow"
+            style={{ border: `1px dashed ${th.ringA}` }}
           />
           <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[1100px] rounded-full border border-white/[0.015]"
-            style={{ borderStyle: 'dashed', animation: 'rotateSlow 35s linear infinite reverse' }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[1100px] rounded-full"
+            style={{ border: `1px dashed ${th.ringB}`, animation: 'rotateSlow 35s linear infinite reverse' }}
+          />
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[560px] h-[560px] rounded-full"
+            style={{ border: `1px dashed ${th.ringA}`, animation: 'rotateSlow 18s linear infinite' }}
           />
         </div>
 
-        {/* Content */}
         <div className="relative max-w-5xl mx-auto text-center pt-24">
-
           {/* Status pill */}
           <div style={{ animation: 'fadeInUp 0.65s ease-out 0.15s both' }}>
-            <div className="inline-flex items-center gap-2.5 border border-white/10 rounded-full px-4 py-2 mb-10" style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)' }}>
+            <div
+              className="inline-flex items-center gap-2.5 rounded-full px-4 py-2 mb-10"
+              style={{ border: `1px solid ${th.border}`, background: th.glass, backdropFilter: 'blur(12px)' }}
+            >
               <span className="w-2 h-2 bg-emerald-400 rounded-full" style={{ animation: 'pulseGlow 2s ease-in-out infinite', boxShadow: '0 0 8px rgba(52,211,153,0.8)' }} />
-              <span className="text-white/75 text-sm font-medium">Campagne en cours · Inscriptions ouvertes</span>
+              <span className="text-sm font-medium" style={{ color: th.sub }}>Campagne en cours · Inscriptions ouvertes</span>
             </div>
           </div>
 
           {/* Headline */}
           <div style={{ animation: 'fadeInUp 0.7s ease-out 0.3s both' }}>
-            <h1 className="font-black tracking-tight leading-none mb-6" style={{ fontSize: 'clamp(3.5rem, 10vw, 8rem)' }}>
-              <span className="text-white">La </span>
-              <span
-                style={{
-                  background: 'linear-gradient(135deg,#ef4444,#f87171,#ef4444)',
-                  backgroundSize: '200% 200%',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  animation: 'gradientShift 5s ease infinite',
-                }}
-              >
+            <h1 className="font-black tracking-tight leading-none mb-6" style={{ fontSize: 'clamp(3.5rem,10vw,8rem)' }}>
+              <span style={{ color: th.text }}>La </span>
+              <span style={{ background: 'linear-gradient(135deg,#ef4444,#f87171,#ef4444)', backgroundSize: '200% 200%', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', animation: 'gradientShift 5s ease infinite' }}>
                 Tamboola
               </span>
               <br />
-              <span
-                style={{
-                  background: 'linear-gradient(135deg,#f59e0b,#fcd34d,#f59e0b)',
-                  backgroundSize: '200% 200%',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  animation: 'gradientShift 5s ease infinite 1.2s',
-                }}
-              >
+              <span style={{ background: 'linear-gradient(135deg,#f59e0b,#fcd34d,#f59e0b)', backgroundSize: '200% 200%', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', animation: 'gradientShift 5s ease infinite 1.2s' }}>
                 Jotun
               </span>
             </h1>
@@ -501,18 +680,18 @@ export default function LandingPage() {
 
           {/* Subline */}
           <div style={{ animation: 'fadeInUp 0.7s ease-out 0.45s both' }}>
-            <p className="text-white/55 text-lg md:text-xl max-w-xl mx-auto mb-10 leading-relaxed">
+            <p className="text-lg md:text-xl max-w-xl mx-auto mb-10 leading-relaxed" style={{ color: th.sub }}>
               Achetez des produits Jotun, inscrivez-vous et tentez de remporter
-              l&apos;un des <strong className="text-white">6 prix exceptionnels</strong>.
+              l&apos;un des <strong style={{ color: th.text }}>6 prix exceptionnels</strong>.
             </p>
           </div>
 
           {/* CTAs */}
           <div style={{ animation: 'fadeInUp 0.7s ease-out 0.6s both' }}>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-20">
-              <button
+              <RippleButton
                 onClick={scrollToForm}
-                className="relative font-black text-base text-white px-9 py-4.5 rounded-2xl transition-all active:scale-95"
+                className="relative font-black text-base text-white rounded-2xl transition-all active:scale-95"
                 style={{
                   background: 'linear-gradient(135deg,#ef4444,#b91c1c)',
                   animation: 'pulseGlow 2.5s ease-in-out infinite',
@@ -520,52 +699,53 @@ export default function LandingPage() {
                 }}
               >
                 Je participe maintenant →
-              </button>
+              </RippleButton>
               <Link
                 href="#prizes"
-                className="font-semibold text-base text-white/80 hover:text-white px-9 rounded-2xl border border-white/12 hover:border-white/25 transition-all"
-                style={{ padding: '1rem 2.25rem', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(8px)' }}
+                className="font-semibold text-base rounded-2xl transition-all"
+                style={{
+                  color: th.sub,
+                  padding: '1rem 2.25rem',
+                  background: th.glass,
+                  border: `1px solid ${th.border}`,
+                  backdropFilter: 'blur(8px)',
+                }}
               >
                 Voir les prix ↓
               </Link>
             </div>
           </div>
 
-          {/* Stat chips */}
-          <div style={{ animation: 'fadeInUp 0.7s ease-out 0.75s both' }}>
+          {/* Stat chips with animated counters */}
+          <div ref={statsRef} style={{ animation: 'fadeInUp 0.7s ease-out 0.75s both' }}>
             <div className="grid grid-cols-3 gap-3 max-w-xs mx-auto">
-              {[{ n: '6', label: 'Prix à gagner' }, { n: '20K', label: 'DA min.' }, { n: '100%', label: 'Gratuit' }].map(s => (
-                <div
-                  key={s.label}
-                  className="rounded-2xl p-4 border border-white/6"
-                  style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(8px)' }}
-                >
-                  <div className="font-black text-xl text-white">{s.n}</div>
-                  <div className="text-white/35 text-[11px] mt-0.5">{s.label}</div>
-                </div>
-              ))}
+              <StatChip n="6"    label="Prix à gagner" visible={statsVisible} th={th} delay={0} />
+              <StatChip n="20K"  label="DA min."       visible={statsVisible} th={th} delay={120} />
+              <StatChip n="100%" label="Gratuit"       visible={statsVisible} th={th} delay={240} />
             </div>
           </div>
 
           {/* Scroll cue */}
-          <div className="mt-16 flex flex-col items-center gap-2 opacity-30">
-            <span className="text-[10px] text-white uppercase tracking-widest">Défiler</span>
-            <svg className="w-4 h-4 text-white animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="mt-16 flex flex-col items-center gap-2" style={{ opacity: 0.3 }}>
+            <span className="text-[10px] uppercase tracking-widest" style={{ color: th.text }}>Défiler</span>
+            <svg className="w-4 h-4 animate-bounce" style={{ color: th.text }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
           </div>
         </div>
       </section>
 
-      {/* ── Section divider ─────────────────────────────────────────────────── */}
+      {/* ── Divider ──────────────────────────────────────────────────────── */}
       <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(239,68,68,0.3),transparent)' }} />
 
-      {/* ── Prizes ─────────────────────────────────────────────────────────── */}
-      <section id="prizes" className="py-32 px-6 relative">
-        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 60% 40% at 50% 50%, rgba(239,68,68,0.04) 0%, transparent 70%)' }} aria-hidden />
-
+      {/* ── Prizes ───────────────────────────────────────────────────────── */}
+      <section id="prizes" className="py-32 px-6 relative" style={{ background: th.page }}>
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: `radial-gradient(ellipse 60% 40% at 50% 50%, rgba(239,68,68,${th.isDark ? '0.04' : '0.025'}) 0%, transparent 70%)` }}
+          aria-hidden
+        />
         <div className="relative max-w-5xl mx-auto">
-          {/* Heading */}
           <div ref={prizesRef} className="text-center mb-16">
             <div style={reveal(prizesVisible, 0)}>
               <div className="inline-flex items-center gap-3 mb-5">
@@ -575,32 +755,32 @@ export default function LandingPage() {
               </div>
             </div>
             <div style={reveal(prizesVisible, 80)}>
-              <h2 className="text-5xl md:text-6xl font-black text-white mb-4">Prix à gagner</h2>
+              <h2 className="text-5xl md:text-6xl font-black mb-4" style={{ color: th.text }}>Prix à gagner</h2>
             </div>
             <div style={reveal(prizesVisible, 140)}>
-              <p className="text-white/45 text-lg max-w-md mx-auto">Six gagnants tirés au sort parmi tous les participants valides.</p>
+              <p className="text-lg max-w-md mx-auto" style={{ color: th.muted }}>Six gagnants tirés au sort parmi tous les participants valides.</p>
             </div>
           </div>
 
-          {/* Cards grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {prizes.map((p, i) => (
-              <PrizeCard key={p.rank} p={p} index={i} visible={prizesVisible} />
+              <PrizeCard key={p.rank} p={p} index={i} visible={prizesVisible} th={th} />
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Section divider ─────────────────────────────────────────────────── */}
-      <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent)' }} />
+      {/* ── Divider ──────────────────────────────────────────────────────── */}
+      <div className="h-px" style={{ background: `linear-gradient(90deg,transparent,${th.border},transparent)` }} />
 
-      {/* ── How it works ───────────────────────────────────────────────────── */}
-      <section id="how" className="py-32 px-6 relative overflow-hidden" style={{ background: '#0a0a14' }}>
-        {/* Central spine line */}
-        <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px" style={{ background: 'linear-gradient(to bottom,transparent,rgba(239,68,68,0.15),transparent)' }} aria-hidden />
-
+      {/* ── How it works ─────────────────────────────────────────────────── */}
+      <section id="how" className="py-32 px-6 relative overflow-hidden" style={{ background: th.section }}>
+        <div
+          className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px"
+          style={{ background: `linear-gradient(to bottom,transparent,rgba(239,68,68,${th.isDark ? '0.15' : '0.08'}),transparent)` }}
+          aria-hidden
+        />
         <div className="relative max-w-5xl mx-auto">
-          {/* Heading */}
           <div ref={stepsRef} className="text-center mb-20">
             <div style={reveal(stepsVisible, 0)}>
               <div className="inline-flex items-center gap-3 mb-5">
@@ -610,13 +790,11 @@ export default function LandingPage() {
               </div>
             </div>
             <div style={reveal(stepsVisible, 80)}>
-              <h2 className="text-5xl md:text-6xl font-black text-white">Comment jouer ?</h2>
+              <h2 className="text-5xl md:text-6xl font-black" style={{ color: th.text }}>Comment jouer ?</h2>
             </div>
           </div>
 
-          {/* Steps */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
-            {/* Connector (desktop) */}
             <div
               className="hidden lg:block absolute top-10 left-[calc(12.5%+28px)] right-[calc(12.5%+28px)] h-px pointer-events-none"
               style={{
@@ -626,20 +804,23 @@ export default function LandingPage() {
               }}
               aria-hidden
             />
-
             {howSteps.map((s, i) => (
-              <div key={s.n} style={reveal(stepsVisible, 200 + i * 120)} className="flex flex-col items-center md:items-start text-center md:text-left">
+              <div
+                key={s.n}
+                style={{
+                  ...reveal(stepsVisible, 200 + i * 120),
+                  transitionTimingFunction: 'cubic-bezier(0.34,1.56,0.64,1)',
+                }}
+                className="flex flex-col items-center md:items-start text-center md:text-left"
+              >
                 <div
                   className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 font-black text-white text-xl relative z-10 flex-shrink-0"
-                  style={{
-                    background: 'linear-gradient(135deg,#ef4444,#b91c1c)',
-                    boxShadow: '0 8px 32px rgba(239,68,68,0.35)',
-                  }}
+                  style={{ background: 'linear-gradient(135deg,#ef4444,#b91c1c)', boxShadow: '0 8px 32px rgba(239,68,68,0.35)' }}
                 >
                   {s.n}
                 </div>
-                <h3 className="font-bold text-white text-lg mb-2">{s.title}</h3>
-                <p className="text-white/45 text-sm leading-relaxed">{s.sub}</p>
+                <h3 className="font-bold text-lg mb-2" style={{ color: th.text }}>{s.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: th.muted }}>{s.sub}</p>
               </div>
             ))}
           </div>
@@ -649,7 +830,7 @@ export default function LandingPage() {
             className="mt-16 relative overflow-hidden rounded-2xl"
             style={{
               border: '1px solid rgba(245,158,11,0.2)',
-              background: 'linear-gradient(135deg,rgba(245,158,11,0.06),rgba(180,83,9,0.03))',
+              background: `linear-gradient(135deg,rgba(245,158,11,${th.isDark ? '0.06' : '0.04'}),rgba(180,83,9,0.03))`,
               ...reveal(stepsVisible, 700),
             }}
           >
@@ -662,10 +843,9 @@ export default function LandingPage() {
               </div>
               <div>
                 <div className="font-bold text-amber-400 mb-1">Vous êtes peintre en bâtiment ?</div>
-                <p className="text-amber-200/55 text-sm leading-relaxed">
+                <p className="text-sm leading-relaxed" style={{ color: th.isDark ? 'rgba(253,230,138,0.55)' : 'rgba(120,80,10,0.7)' }}>
                   Une facture d&apos;achat Jotun d&apos;un montant minimum de{' '}
-                  <strong className="text-amber-300">20 000 DA</strong> est requise pour valider votre participation.
-                  Elle sera analysée automatiquement par notre système.
+                  <strong className="text-amber-400">20 000 DA</strong> est requise pour valider votre participation.
                 </p>
               </div>
             </div>
@@ -673,11 +853,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Section divider ─────────────────────────────────────────────────── */}
-      <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent)' }} />
+      {/* ── Divider ──────────────────────────────────────────────────────── */}
+      <div className="h-px" style={{ background: `linear-gradient(90deg,transparent,${th.border},transparent)` }} />
 
-      {/* ── FAQ ────────────────────────────────────────────────────────────── */}
-      <section id="faq" className="py-32 px-6 relative bg-[#08080f]">
+      {/* ── FAQ ──────────────────────────────────────────────────────────── */}
+      <section id="faq" className="py-32 px-6 relative" style={{ background: th.page }}>
         <div className="relative max-w-2xl mx-auto">
           <div ref={faqRef} className="text-center mb-14">
             <div style={reveal(faqVisible, 0)}>
@@ -688,31 +868,26 @@ export default function LandingPage() {
               </div>
             </div>
             <div style={reveal(faqVisible, 80)}>
-              <h2 className="text-5xl font-black text-white">FAQ</h2>
+              <h2 className="text-5xl font-black" style={{ color: th.text }}>FAQ</h2>
             </div>
           </div>
-
           <div className="space-y-3">
-            {faqs.map((f, i) => (
-              <FaqItem key={f.q} f={f} index={i} visible={faqVisible} />
-            ))}
+            {faqs.map((f, i) => <FaqItem key={f.q} f={f} index={i} visible={faqVisible} th={th} />)}
           </div>
         </div>
       </section>
 
-      {/* ── Section divider ─────────────────────────────────────────────────── */}
+      {/* ── Divider ──────────────────────────────────────────────────────── */}
       <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(239,68,68,0.25),transparent)' }} />
 
-      {/* ── Registration ───────────────────────────────────────────────────── */}
-      <section id="register" ref={formRef} className="py-32 px-6 relative overflow-hidden">
+      {/* ── Registration ─────────────────────────────────────────────────── */}
+      <section id="register" ref={formRef} className="py-32 px-6 relative overflow-hidden" style={{ background: th.section }}>
         <div
-          className="absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse 50% 60% at 50% 0%, rgba(239,68,68,0.1) 0%, transparent 70%)' }}
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: `radial-gradient(ellipse 50% 60% at 50% 0%, rgba(239,68,68,${th.isDark ? '0.1' : '0.06'}) 0%, transparent 70%)` }}
           aria-hidden
         />
-
         <div className="relative max-w-lg mx-auto">
-          {/* Heading */}
           <div ref={formTitleRef} className="text-center mb-12">
             <div style={reveal(formTitleVisible, 0)}>
               <div className="inline-flex items-center gap-3 mb-5">
@@ -722,10 +897,10 @@ export default function LandingPage() {
               </div>
             </div>
             <div style={reveal(formTitleVisible, 80)}>
-              <h2 className="text-5xl font-black text-white mb-3">Participez maintenant</h2>
+              <h2 className="text-5xl font-black mb-3" style={{ color: th.text }}>Participez maintenant</h2>
             </div>
             <div style={reveal(formTitleVisible, 140)}>
-              <p className="text-white/40">Inscription gratuite et rapide.</p>
+              <p style={{ color: th.muted }}>Inscription gratuite et rapide.</p>
             </div>
           </div>
 
@@ -733,21 +908,16 @@ export default function LandingPage() {
           {step === 'done' ? (
             <div
               className="relative overflow-hidden rounded-3xl text-center p-10"
-              style={{ border: '1px solid rgba(16,185,129,0.2)', background: 'linear-gradient(135deg,rgba(16,185,129,0.07),rgba(5,150,105,0.04))' }}
+              style={{ border: '1px solid rgba(16,185,129,0.2)', background: `linear-gradient(135deg,rgba(16,185,129,${th.isDark ? '0.07' : '0.04'}),rgba(5,150,105,0.03))`, animation: 'bounceIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both' }}
             >
               <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(16,185,129,0.5),transparent)' }} aria-hidden />
-              <div
-                className="w-20 h-20 rounded-2xl mx-auto mb-6 flex items-center justify-center"
-                style={{ background: 'rgba(16,185,129,0.12)' }}
-              >
+              <div className="w-20 h-20 rounded-2xl mx-auto mb-6 flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.12)' }}>
                 <svg viewBox="0 0 24 24" className="w-10 h-10 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="1.8">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-black text-white mb-3">Inscription confirmée !</h3>
-              <p className="text-white/50 text-sm leading-relaxed">
-                {uploadResult?.message || 'Vous êtes bien inscrit à la Tamboola Jotun. Bonne chance !'}
-              </p>
+              <h3 className="text-2xl font-black mb-3" style={{ color: th.text }}>Inscription confirmée !</h3>
+              <p className="text-sm leading-relaxed" style={{ color: th.sub }}>{uploadResult?.message || 'Vous êtes bien inscrit à la Tamboola Jotun. Bonne chance !'}</p>
               <button
                 onClick={() => { setStep('form'); setUploadResult(null); setForm({ full_name: '', phone: '', wilaya: '', is_painter: false, consent: false, invoice: null }); }}
                 className="mt-8 text-sm text-red-400 hover:text-red-300 font-semibold transition-colors"
@@ -756,26 +926,26 @@ export default function LandingPage() {
               </button>
             </div>
           ) : (
-            /* Form card */
             <div
               className="relative overflow-hidden rounded-3xl"
-              style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'linear-gradient(135deg,#0f0f1c,#12121f)' }}
+              style={{
+                border: `1px solid ${th.border}`,
+                background: `linear-gradient(135deg,${th.card},${th.cardAlt})`,
+                animation: formTitleVisible ? 'slideInRight 0.6s ease-out 0.3s both' : undefined,
+              }}
             >
-              {/* Top accent */}
               <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(239,68,68,0.6),transparent)' }} aria-hidden />
 
-              {/* Card header */}
-              <div className="px-8 py-7 border-b border-white/5">
-                <h3 className="text-white font-bold text-xl">Créer votre participation</h3>
-                <p className="text-white/35 text-sm mt-1">Rejoignez le programme et tentez votre chance</p>
+              <div className="px-8 py-7" style={{ borderBottom: `1px solid ${th.borderSub}` }}>
+                <h3 className="font-bold text-xl" style={{ color: th.text }}>Créer votre participation</h3>
+                <p className="text-sm mt-1" style={{ color: th.muted }}>Rejoignez le programme et tentez votre chance</p>
               </div>
 
               <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                {/* Error */}
                 {errorMsg && (
                   <div
                     className="rounded-xl p-4 flex gap-3 items-start text-sm"
-                    style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#fca5a5' }}
+                    style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#fca5a5', animation: 'bounceIn 0.4s ease both' }}
                   >
                     <svg className="w-5 h-5 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -786,89 +956,84 @@ export default function LandingPage() {
 
                 {/* Name */}
                 <div>
-                  <label className="block text-[11px] font-bold text-white/40 tracking-[0.18em] uppercase mb-2.5">
+                  <label className="block text-[11px] font-bold tracking-[0.18em] uppercase mb-2.5" style={{ color: th.muted }}>
                     Nom complet <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text" required autoComplete="name"
                     value={form.full_name} onChange={e => set('full_name', e.target.value)}
                     placeholder="Ahmed Benali"
-                    className="w-full rounded-xl px-4 py-3 text-white text-sm placeholder-white/20 outline-none transition-all"
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
-                    onFocus={e => { e.currentTarget.style.border = '1px solid rgba(239,68,68,0.45)'; e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; }}
-                    onBlur={e => { e.currentTarget.style.border = '1px solid rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                    className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all"
+                    style={{ background: th.input, border: `1px solid ${th.border}`, color: th.inputText }}
+                    onFocus={e => { e.currentTarget.style.border = `1px solid ${th.borderFocus}`; e.currentTarget.style.background = th.inputFocus; }}
+                    onBlur={e =>  { e.currentTarget.style.border = `1px solid ${th.border}`;      e.currentTarget.style.background = th.input; }}
                   />
                 </div>
 
                 {/* Phone */}
                 <div>
-                  <label className="block text-[11px] font-bold text-white/40 tracking-[0.18em] uppercase mb-2.5">
+                  <label className="block text-[11px] font-bold tracking-[0.18em] uppercase mb-2.5" style={{ color: th.muted }}>
                     Téléphone <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="tel" required autoComplete="tel"
                     value={form.phone} onChange={e => set('phone', e.target.value)}
                     placeholder="0555 123 456"
-                    className="w-full rounded-xl px-4 py-3 text-white text-sm placeholder-white/20 outline-none transition-all"
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
-                    onFocus={e => { e.currentTarget.style.border = '1px solid rgba(239,68,68,0.45)'; e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; }}
-                    onBlur={e => { e.currentTarget.style.border = '1px solid rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                    className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all"
+                    style={{ background: th.input, border: `1px solid ${th.border}`, color: th.inputText }}
+                    onFocus={e => { e.currentTarget.style.border = `1px solid ${th.borderFocus}`; e.currentTarget.style.background = th.inputFocus; }}
+                    onBlur={e =>  { e.currentTarget.style.border = `1px solid ${th.border}`;      e.currentTarget.style.background = th.input; }}
                   />
                 </div>
 
                 {/* Wilaya */}
                 <div>
-                  <label className="block text-[11px] font-bold text-white/40 tracking-[0.18em] uppercase mb-2.5">
+                  <label className="block text-[11px] font-bold tracking-[0.18em] uppercase mb-2.5" style={{ color: th.muted }}>
                     Wilaya <span className="text-red-500">*</span>
                   </label>
                   <select
                     required value={form.wilaya} onChange={e => set('wilaya', e.target.value)}
                     className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all appearance-none"
-                    style={{
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      color: form.wilaya ? '#fff' : 'rgba(255,255,255,0.2)',
-                      colorScheme: 'dark',
-                    }}
-                    onFocus={e => { e.currentTarget.style.border = '1px solid rgba(239,68,68,0.45)'; }}
-                    onBlur={e => { e.currentTarget.style.border = '1px solid rgba(255,255,255,0.08)'; }}
+                    style={{ background: th.input, border: `1px solid ${th.border}`, color: form.wilaya ? th.inputText : th.placeholder, colorScheme: th.isDark ? 'dark' : 'light' }}
+                    onFocus={e => { e.currentTarget.style.border = `1px solid ${th.borderFocus}`; }}
+                    onBlur={e =>  { e.currentTarget.style.border = `1px solid ${th.border}`; }}
                   >
-                    <option value="" style={{ background: '#0f0f1c', color: 'rgba(255,255,255,0.4)' }}>— Sélectionner votre wilaya —</option>
-                    {WILAYAS.map(w => <option key={w} value={w} style={{ background: '#0f0f1c', color: '#fff' }}>{w}</option>)}
+                    <option value="" style={{ background: th.selectBg, color: th.placeholder }}>— Sélectionner votre wilaya —</option>
+                    {WILAYAS.map(w => <option key={w} value={w} style={{ background: th.selectBg, color: th.inputText }}>{w}</option>)}
                   </select>
                 </div>
 
-                {/* Profession toggle */}
+                {/* Profession */}
                 <div>
-                  <label className="block text-[11px] font-bold text-white/40 tracking-[0.18em] uppercase mb-2.5">Profession</label>
+                  <label className="block text-[11px] font-bold tracking-[0.18em] uppercase mb-2.5" style={{ color: th.muted }}>Profession</label>
                   <button
                     type="button"
                     onClick={() => set('is_painter', !form.is_painter)}
                     className="w-full flex items-center gap-4 p-4 rounded-xl text-left transition-all"
                     style={{
-                      border: form.is_painter ? '1px solid rgba(239,68,68,0.35)' : '1px solid rgba(255,255,255,0.08)',
-                      background: form.is_painter ? 'rgba(239,68,68,0.07)' : 'rgba(255,255,255,0.03)',
+                      border: form.is_painter ? '1px solid rgba(239,68,68,0.35)' : `1px solid ${th.border}`,
+                      background: form.is_painter ? 'rgba(239,68,68,0.07)' : th.glass,
                     }}
                   >
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all"
-                      style={{ background: form.is_painter ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.06)' }}
+                      style={{ background: form.is_painter ? 'rgba(239,68,68,0.15)' : th.glassHard }}
                     >
-                      <svg viewBox="0 0 24 24" className={`w-5 h-5 transition-colors ${form.is_painter ? 'text-red-400' : 'text-white/35'}`} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <svg viewBox="0 0 24 24" className="w-5 h-5 transition-colors" style={{ color: form.is_painter ? '#f87171' : th.muted }} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                       </svg>
                     </div>
                     <div className="flex-1">
-                      <div className={`text-sm font-semibold transition-colors ${form.is_painter ? 'text-red-300' : 'text-white/60'}`}>
+                      <div className="text-sm font-semibold transition-colors" style={{ color: form.is_painter ? '#fca5a5' : th.sub }}>
                         Je suis peintre en bâtiment
                       </div>
-                      <div className="text-[11px] text-white/25 mt-0.5">
+                      <div className="text-[11px] mt-0.5" style={{ color: th.faint }}>
                         {form.is_painter ? 'Facture Jotun ≥ 20 000 DA requise' : 'Cliquez si vous exercez ce métier'}
                       </div>
                     </div>
                     <div
                       className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-all"
-                      style={{ background: form.is_painter ? '#ef4444' : 'transparent', borderColor: form.is_painter ? '#ef4444' : 'rgba(255,255,255,0.2)' }}
+                      style={{ background: form.is_painter ? '#ef4444' : 'transparent', borderColor: form.is_painter ? '#ef4444' : th.muted }}
                     >
                       {form.is_painter && (
                         <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -881,18 +1046,18 @@ export default function LandingPage() {
 
                 {/* Invoice upload */}
                 <div>
-                  <label className="block text-[11px] font-bold text-white/40 tracking-[0.18em] uppercase mb-2.5">
+                  <label className="block text-[11px] font-bold tracking-[0.18em] uppercase mb-2.5" style={{ color: th.muted }}>
                     Facture Jotun <span className="text-red-500">*</span>
                   </label>
-                  <PhotoTips />
+                  <PhotoTips dark={th.isDark} />
                   <label
                     className="flex flex-col items-center justify-center gap-3 w-full border-2 border-dashed rounded-xl px-4 py-8 cursor-pointer transition-all"
                     style={{
-                      borderColor: form.invoice ? 'rgba(16,185,129,0.4)' : 'rgba(255,255,255,0.1)',
-                      background: form.invoice ? 'rgba(16,185,129,0.05)' : 'rgba(255,255,255,0.02)',
+                      borderColor: form.invoice ? 'rgba(16,185,129,0.4)' : th.border,
+                      background:  form.invoice ? `rgba(16,185,129,${th.isDark ? '0.05' : '0.03'})` : th.glass,
                     }}
-                    onMouseEnter={e => { if (!form.invoice) e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)'; }}
-                    onMouseLeave={e => { if (!form.invoice) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+                    onMouseEnter={e => { if (!form.invoice) e.currentTarget.style.borderColor = 'rgba(239,68,68,0.35)'; }}
+                    onMouseLeave={e => { if (!form.invoice) e.currentTarget.style.borderColor = th.border; }}
                   >
                     <input type="file" accept="image/*,application/pdf" className="hidden" onChange={e => set('invoice', e.target.files?.[0] ?? null)} />
                     {form.invoice ? (
@@ -901,15 +1066,15 @@ export default function LandingPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span className="text-sm font-semibold text-emerald-400">{form.invoice.name}</span>
-                        <span className="text-xs text-white/25">Cliquez pour changer</span>
+                        <span className="text-xs" style={{ color: th.faint }}>Cliquez pour changer</span>
                       </>
                     ) : (
                       <>
-                        <svg viewBox="0 0 24 24" className="w-8 h-8 text-white/25" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <svg viewBox="0 0 24 24" className="w-8 h-8" style={{ color: th.muted }} fill="none" stroke="currentColor" strokeWidth="1.5">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                         </svg>
-                        <span className="text-sm font-semibold text-white/40">Joindre la facture</span>
-                        <span className="text-xs text-white/20">JPG, PNG ou PDF · max 10 Mo</span>
+                        <span className="text-sm font-semibold" style={{ color: th.muted }}>Joindre la facture</span>
+                        <span className="text-xs" style={{ color: th.faint }}>JPG, PNG ou PDF · max 10 Mo</span>
                       </>
                     )}
                   </label>
@@ -927,7 +1092,7 @@ export default function LandingPage() {
                       type="button"
                       onClick={() => set('consent', !form.consent)}
                       className="mt-0.5 w-5 h-5 rounded flex-shrink-0 flex items-center justify-center transition-all border-2"
-                      style={{ background: form.consent ? '#ef4444' : 'transparent', borderColor: form.consent ? '#ef4444' : 'rgba(255,255,255,0.2)' }}
+                      style={{ background: form.consent ? '#ef4444' : 'transparent', borderColor: form.consent ? '#ef4444' : th.muted }}
                     >
                       {form.consent && (
                         <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -935,16 +1100,14 @@ export default function LandingPage() {
                         </svg>
                       )}
                     </button>
-                    <span className="text-sm text-white/40 group-hover:text-white/55 leading-relaxed transition-colors">
+                    <span className="text-sm leading-relaxed transition-colors" style={{ color: th.muted }}>
                       J&apos;accepte de participer à la Tamboola Jotun et consens à ce que mes informations soient utilisées dans le cadre de ce programme.
                     </span>
                   </label>
                 </div>
 
                 {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={loading || !form.consent}
+                <RippleButton
                   className="w-full font-bold text-sm text-white rounded-xl py-4 flex items-center justify-center gap-2.5 transition-all active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed"
                   style={{
                     background: 'linear-gradient(135deg,#ef4444,#b91c1c)',
@@ -962,42 +1125,38 @@ export default function LandingPage() {
                   ) : (
                     form.is_painter ? "S'inscrire et envoyer la facture →" : "S'inscrire →"
                   )}
-                </button>
+                </RippleButton>
               </form>
             </div>
           )}
         </div>
       </section>
 
-      {/* ── Footer ─────────────────────────────────────────────────────────── */}
-      <footer className="relative px-6 py-16 border-t border-white/5" style={{ background: '#060609' }}>
+      {/* ── Footer ───────────────────────────────────────────────────────── */}
+      <footer
+        className="relative px-6 py-16"
+        style={{ background: th.foot, borderTop: `1px solid ${th.border}` }}
+      >
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-            {/* Brand */}
             <div className="flex items-center gap-3">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-white"
-                style={{ background: 'linear-gradient(135deg,#ef4444,#b91c1c)', boxShadow: '0 4px 16px rgba(239,68,68,0.3)' }}
-              >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-white" style={{ background: 'linear-gradient(135deg,#ef4444,#b91c1c)', boxShadow: '0 4px 16px rgba(239,68,68,0.3)' }}>
                 J
               </div>
               <div>
-                <div className="font-black text-white tracking-tight">JOTUN</div>
+                <div className="font-black tracking-tight" style={{ color: th.text }}>JOTUN</div>
                 <div className="text-[10px] text-red-400 font-bold tracking-[0.2em] uppercase">Tamboola</div>
               </div>
             </div>
-
-            <p className="text-white/25 text-sm text-center">
+            <p className="text-sm text-center" style={{ color: th.faint }}>
               Programme de fidélité Jotun Algérie · Tirage au sort officiel
             </p>
-
             <div className="flex items-center gap-6">
-              <a href="#register"    className="text-white/25 hover:text-white text-sm transition-colors">Participer</a>
-              <a href="/admin/login" className="text-white/25 hover:text-white text-sm transition-colors">Admin</a>
+              <a href="#register" className="text-sm transition-colors" style={{ color: th.faint }} onMouseEnter={e => (e.currentTarget.style.color = th.text)} onMouseLeave={e => (e.currentTarget.style.color = th.faint)}>Participer</a>
+              <a href="/admin/login" className="text-sm transition-colors" style={{ color: th.faint }} onMouseEnter={e => (e.currentTarget.style.color = th.text)} onMouseLeave={e => (e.currentTarget.style.color = th.faint)}>Admin</a>
             </div>
           </div>
-
-          <div className="mt-10 pt-8 text-center text-white/15 text-xs" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <div className="mt-10 pt-8 text-center text-xs" style={{ borderTop: `1px solid ${th.borderSub}`, color: th.faint }}>
             © {new Date().getFullYear()} Jotun Algérie. Tous droits réservés.
           </div>
         </div>
