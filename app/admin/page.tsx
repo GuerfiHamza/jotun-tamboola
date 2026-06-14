@@ -221,7 +221,12 @@ export default function AdminDashboard() {
     });
     fetchParticipants(page);
     fetchStats();
-    if (selected?.id === id) setSelected(s => s ? { ...s, status } : null);
+    if (selected?.id === id) {
+      setSelected(s => s ? { ...s, status } : null);
+      // Approval also accepts pending invoices server-side — refetch the
+      // detail so the invoice badges reflect the change immediately.
+      if (status === 'approved') openParticipant(id);
+    }
   }
 
   function exportAs(format: 'csv' | 'xlsx' | 'pdf') {

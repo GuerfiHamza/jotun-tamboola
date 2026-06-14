@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/index';
 import { participants, invoices } from '@/lib/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
 import { getAdminFromRequest } from '@/lib/adminAuth';
 import { checkCsrf } from '@/lib/csrf';
 
@@ -62,10 +62,21 @@ export async function PATCH(
   if (typeof body.status !== 'string' || !allowed.includes(body.status as Status))
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
 
+  const newStatus = body.status as Status;
+
   await db
     .update(participants)
-    .set({ status: body.status as Status, updated_at: new Date() })
+    .set({ status: newStatus, updated_at: new Date() })
     .where(eq(participants.id, id));
+
+  // When an admin approves a participant, also mark their still-pending
+  // invoices as accepted (admin approval is the authoritative decision).
+  if (newStatus === 'approved') {
+    await db
+      .update(invoices)
+      .set({ status: 'accepted' })
+      .where(and(eq(invoices.participant_id, id), eq(invoices.status, 'pending')));
+  }
 
   return NextResponse.json({ success: true });
 }
