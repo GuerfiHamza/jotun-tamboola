@@ -9,7 +9,6 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import FileType from 'file-type';
 import { randomUUID } from 'crypto';
-import { verifyTurnstile } from '@/lib/turnstile';
 import {
   exactHash,
   perceptualHash,
@@ -42,13 +41,10 @@ export async function POST(req: NextRequest) {
 
   const participantIdRaw = formData.get('participantId');
   const file = formData.get('invoice');
-  const turnstileToken = formData.get('turnstileToken');
 
-  // #5 Bot protection (no-op if TURNSTILE_SECRET_KEY is unset)
-  if (!(await verifyTurnstile(turnstileToken, ip))) {
-    return NextResponse.json({ error: 'Vérification anti-robot échouée. Réessayez.' }, { status: 403 });
-  }
-
+  // Bot check already happened in /api/register (Turnstile tokens are
+  // single-use, so it can't be re-verified here); this upload still
+  // requires a participantId from that successful registration.
   if (!participantIdRaw || !file || !(file instanceof File)) {
     return NextResponse.json({ error: 'participantId et facture sont requis.' }, { status: 400 });
   }

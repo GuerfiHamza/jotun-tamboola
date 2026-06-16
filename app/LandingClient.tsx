@@ -557,7 +557,6 @@ export default function LandingClient({ locale, dict }: { locale: Locale; dict: 
         const fd = new FormData();
         fd.append('invoice', form.invoice);
         fd.append('participantId', String(regData.participantId));
-        fd.append('turnstileToken', turnstileToken);
         const upRes = await fetch('/api/upload-invoice', { method: 'POST', headers: { 'x-requested-with': 'XMLHttpRequest' }, body: fd });
         const upData = await upRes.json() as { error?: string; accepted?: boolean; message?: string };
         if (!upRes.ok) { setErrorMsg(upData.error ?? errors.uploadErrorFallback); setLoading(false); return; }
