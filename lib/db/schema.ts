@@ -3,10 +3,12 @@ import { mysqlTable, int, varchar, tinyint, timestamp, decimal, text, mysqlEnum 
 export const participants = mysqlTable('participants', {
   id:           int('id').autoincrement().primaryKey(),
   full_name:    varchar('full_name', { length: 255 }).notNull(),
-  phone:        varchar('phone', { length: 30 }).notNull().unique(),
+  nom:          varchar('nom', { length: 100 }),
+  prenom:       varchar('prenom', { length: 100 }),
+  phone:        varchar('phone', { length: 30 }).notNull(),
   wilaya:       varchar('wilaya', { length: 100 }).notNull(),
   is_painter:   tinyint('is_painter').default(0).notNull(),
-password: varchar('password', { length: 255 }).default('').notNull(),
+  password:     varchar('password', { length: 255 }).default('').notNull(),
   status:       mysqlEnum('status', ['pending', 'approved', 'rejected']).default('pending').notNull(),
   created_at:   timestamp('created_at').defaultNow(),
   updated_at:   timestamp('updated_at').defaultNow().onUpdateNow(),
@@ -19,7 +21,6 @@ export const invoices = mysqlTable('invoices', {
   original_name:    varchar('original_name', { length: 255 }).notNull(),
   amount_detected:  decimal('amount_detected', { precision: 12, scale: 2 }),
   gemini_response:  text('gemini_response'),
-  // De-duplication signals
   file_hash:        varchar('file_hash', { length: 64 }),        // #6 SHA-256 of raw bytes
   perceptual_hash:  varchar('perceptual_hash', { length: 16 }),  // #7 64-bit dHash (hex)
   content_key:      varchar('content_key', { length: 255 }),     // #8 vendor|invoice_no|date|amount

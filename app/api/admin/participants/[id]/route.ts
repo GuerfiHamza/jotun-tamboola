@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/index';
 import { participants, invoices } from '@/lib/db/schema';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc, and, inArray } from 'drizzle-orm';
 import { getAdminFromRequest } from '@/lib/adminAuth';
 import { checkCsrf } from '@/lib/csrf';
 
@@ -27,13 +27,23 @@ export async function GET(
   });
   if (!participant) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
+  // Same phone can have several registrations; group all their invoices here
+  // so the admin sees every submission for that phone in one place.
+  const submissions = await db
+    .select({ id: participants.id, status: participants.status, created_at: participants.created_at, wilaya: participants.wilaya })
+    .from(participants)
+    .where(eq(participants.phone, participant.phone))
+    .orderBy(desc(participants.created_at));
+
+  const submissionIds = submissions.map(s => s.id);
+
   const participantInvoices = await db
     .select()
     .from(invoices)
-    .where(eq(invoices.participant_id, id))
+    .where(inArray(invoices.participant_id, submissionIds))
     .orderBy(desc(invoices.uploaded_at));
 
-  return NextResponse.json({ participant, invoices: participantInvoices });
+  return NextResponse.json({ participant, invoices: participantInvoices, submissions });
 }
 
 export async function PATCH(
@@ -69,13 +79,13 @@ export async function PATCH(
     .set({ status: newStatus, updated_at: new Date() })
     .where(eq(participants.id, id));
 
-  // When an admin approves a participant, also mark their still-pending
-  // invoices as accepted (admin approval is the authoritative decision).
-  if (newStatus === 'approved') {
+  // Admin's participant-level decision is authoritative: cascade it to
+  // every invoice on this submission, not just the still-pending ones.
+  if (newStatus === 'approved' || newStatus === 'rejected') {
     await db
       .update(invoices)
-      .set({ status: 'accepted' })
-      .where(and(eq(invoices.participant_id, id), eq(invoices.status, 'pending')));
+      .set({ status: newStatus === 'approved' ? 'accepted' : 'rejected' })
+      .where(eq(invoices.participant_id, id));
   }
 
   return NextResponse.json({ success: true });

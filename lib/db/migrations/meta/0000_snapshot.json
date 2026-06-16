@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "204cb0e0-7d83-47e5-a2d3-0e338a0e3b7c",
+  "id": "307cbe3b-dac0-48dd-94d1-939268a0bb40",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "admins": {
@@ -102,6 +102,35 @@
           "notNull": false,
           "autoincrement": false
         },
+        "file_hash": {
+          "name": "file_hash",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "perceptual_hash": {
+          "name": "perceptual_hash",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "content_key": {
+          "name": "content_key",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "duplicate_flag": {
+          "name": "duplicate_flag",
+          "type": "tinyint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
         "status": {
           "name": "status",
           "type": "enum('pending','accepted','rejected')",
@@ -171,6 +200,20 @@
           "notNull": true,
           "autoincrement": false
         },
+        "nom": {
+          "name": "nom",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "prenom": {
+          "name": "prenom",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "phone": {
           "name": "phone",
           "type": "varchar(30)",
@@ -198,7 +241,8 @@
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "''"
         },
         "status": {
           "name": "status",
@@ -236,14 +280,7 @@
           ]
         }
       },
-      "uniqueConstraints": {
-        "participants_phone_unique": {
-          "name": "participants_phone_unique",
-          "columns": [
-            "phone"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "checkConstraint": {}
     }
   },

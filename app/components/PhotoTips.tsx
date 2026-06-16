@@ -46,14 +46,22 @@ function Receipt({ variant, dark }: { variant: 'good' | 'dark' | 'cut' | 'rotate
   );
 }
 
-const TIPS: { variant: 'good' | 'dark' | 'cut' | 'rotated'; ok: boolean; label: string }[] = [
-  { variant: 'good',    ok: true,  label: 'Facture entière, à plat, bien éclairée, montant total lisible' },
-  { variant: 'dark',    ok: false, label: 'Photo floue ou sombre' },
-  { variant: 'cut',     ok: false, label: 'Facture coupée ou doigt sur le total' },
-  { variant: 'rotated', ok: false, label: 'Photo de travers' },
+type PhotoTipsDict = {
+  title: string;
+  good: string;
+  dark: string;
+  cut: string;
+  rotated: string;
+};
+
+const VARIANTS: { variant: 'good' | 'dark' | 'cut' | 'rotated'; ok: boolean }[] = [
+  { variant: 'good',    ok: true  },
+  { variant: 'dark',    ok: false },
+  { variant: 'cut',     ok: false },
+  { variant: 'rotated', ok: false },
 ];
 
-export default function PhotoTips({ dark = true }: { dark?: boolean }) {
+export default function PhotoTips({ dark = true, dict }: { dark?: boolean; dict: PhotoTipsDict }) {
   return (
     <div
       className="mb-3 rounded-xl p-3"
@@ -66,32 +74,31 @@ export default function PhotoTips({ dark = true }: { dark?: boolean }) {
         className="text-[11px] font-bold mb-2 tracking-wide"
         style={{ color: dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}
       >
-        Comment photographier votre facture
+        {dict.title}
       </p>
       <div className="grid grid-cols-4 gap-2">
-        {TIPS.map(t => (
-          <div key={t.variant} className="text-center">
+        {VARIANTS.map(({ variant, ok }) => (
+          <div key={variant} className="text-center">
             <div
               className="relative rounded-lg overflow-hidden border-2"
-              style={{ borderColor: t.ok ? 'rgba(16,185,129,0.5)' : 'rgba(13,42,148,0.4)' }}
+              style={{ borderColor: ok ? 'rgba(16,185,129,0.5)' : 'rgba(13,42,148,0.4)' }}
             >
-              <Receipt variant={t.variant} dark={dark} />
+              <Receipt variant={variant} dark={dark} />
               <span
                 className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-black shadow"
-                style={{ background: t.ok ? '#10b981' : '#0d2a94' }}
-                aria-label={t.ok ? 'Bon exemple' : 'Mauvais exemple'}
+                style={{ background: ok ? '#10b981' : '#0d2a94' }}
               >
-                {t.ok ? '✓' : '✕'}
+                {ok ? '✓' : '✕'}
               </span>
             </div>
             <p
               className="text-[9px] leading-tight mt-1.5"
               style={{
-                color:      t.ok ? 'rgba(52,211,153,0.9)' : (dark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.4)'),
-                fontWeight: t.ok ? 600 : 400,
+                color:      ok ? 'rgba(52,211,153,0.9)' : (dark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.4)'),
+                fontWeight: ok ? 600 : 400,
               }}
             >
-              {t.label}
+              {dict[variant]}
             </p>
           </div>
         ))}

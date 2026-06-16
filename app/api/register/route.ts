@@ -1,22 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/index';
-import { participants, invoices } from '@/lib/db/schema';
-import { eq, count } from 'drizzle-orm';
+import { participants } from '@/lib/db/schema';
 import { checkCsrf } from '@/lib/csrf';
 import { checkRateLimit } from '@/lib/rateLimit';
 import { verifyTurnstile } from '@/lib/turnstile';
-
-const WILAYAS = new Set([
-  'Adrar','Chlef','Laghouat','Oum El Bouaghi','Batna','Béjaïa','Biskra','Béchar',
-  'Blida','Bouira','Tamanrasset','Tébessa','Tlemcen','Tiaret','Tizi Ouzou','Alger',
-  'Djelfa','Jijel','Sétif','Saïda','Skikda','Sidi Bel Abbès','Annaba','Guelma',
-  'Constantine','Médéa','Mostaganem',"M'Sila",'Mascara','Ouargla','Oran','El Bayadh',
-  'Illizi','Bordj Bou Arréridj','Boumerdès','El Tarf','Tindouf','Tissemsilt',
-  'El Oued','Khenchela','Souk Ahras','Tipaza','Mila','Aïn Defla','Naâma',
-  'Aïn Témouchent','Ghardaïa','Relizane','Timimoun','Bordj Badji Mokhtar',
-  'Ouled Djellal','Béni Abbès','In Salah','In Guezzam','Touggourt','Djanet',
-  "El M'Ghair",'El Meniaa',
-]);
+import { STORES_SET } from '@/lib/stores';
 
 // Algerian mobile/landline: 0 + 9 digits (05/06/07 mobile, 02/03/04 landline)
 const PHONE_RE = /^0[2-7]\d{8}$/;
@@ -40,7 +28,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Trop de tentatives. Réessayez plus tard.' }, { status: 429 });
   }
 
-  let body: { full_name?: unknown; phone?: unknown; wilaya?: unknown; is_painter?: unknown; turnstileToken?: unknown };
+  let body: { nom?: unknown; prenom?: unknown; phone?: unknown; wilaya?: unknown; is_painter?: unknown; turnstileToken?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -52,52 +40,36 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Vérification anti-robot échouée. Réessayez.' }, { status: 403 });
   }
 
-  const full_name = typeof body.full_name === 'string' ? body.full_name.trim() : '';
-  const phone = typeof body.phone === 'string' ? normalizePhone(body.phone) : '';
-  const wilaya = typeof body.wilaya === 'string' ? body.wilaya : '';
+  const nom    = typeof body.nom    === 'string' ? body.nom.trim()    : '';
+  const prenom = typeof body.prenom === 'string' ? body.prenom.trim() : '';
+  const phone  = typeof body.phone  === 'string' ? normalizePhone(body.phone) : '';
+  const wilaya = typeof body.wilaya === 'string' ? body.wilaya.trim() : '';
+  const full_name = `${prenom} ${nom}`.trim();
 
-  if (!full_name || !phone || !wilaya) {
+  if (!nom || !prenom || !phone || !wilaya) {
     return NextResponse.json({ error: 'Tous les champs obligatoires doivent être remplis.' }, { status: 400 });
   }
-  if (full_name.length < 3 || full_name.length > 255) {
-    return NextResponse.json({ error: 'Nom invalide (3 à 255 caractères).' }, { status: 400 });
+  if (nom.length < 2 || nom.length > 100 || prenom.length < 2 || prenom.length > 100) {
+    return NextResponse.json({ error: 'Nom ou prénom invalide (2 à 100 caractères).' }, { status: 400 });
   }
   if (!PHONE_RE.test(phone)) {
     return NextResponse.json({ error: 'Numéro de téléphone algérien invalide (ex : 0550123456).' }, { status: 400 });
   }
-  if (!WILAYAS.has(wilaya)) {
-    return NextResponse.json({ error: 'Wilaya invalide.' }, { status: 400 });
+  if (!STORES_SET.has(wilaya)) {
+    return NextResponse.json({ error: 'Point de vente invalide.' }, { status: 400 });
   }
 
-  // Single source of truth = the unique phone index. We still do a fast
-  // pre-check to return a friendly state, but the INSERT catch below is what
-  // actually prevents duplicates (and the race between two simultaneous POSTs).
-  const existing = await db
-    .select({ id: participants.id })
-    .from(participants)
-    .where(eq(participants.phone, phone))
-    .limit(1);
-
-  if (existing.length > 0) {
-    const [{ value: invoiceCount }] = await db
-      .select({ value: count() })
-      .from(invoices)
-      .where(eq(invoices.participant_id, existing[0].id));
-    return NextResponse.json(
-      {
-        error: 'Ce numéro de téléphone est déjà inscrit.',
-        alreadyRegistered: true,
-        hasInvoice: Number(invoiceCount) > 0,
-      },
-      { status: 409 }
-    );
-  }
-
+  // Duplicate phone numbers are allowed by design — the same person may
+  // submit multiple separate entries. They are grouped by phone in the admin
+  // dashboard. Invoice-level dedup (in the upload route) still prevents the
+  // same invoice image from being reused.
   try {
     const [inserted] = await db
       .insert(participants)
       .values({
         full_name,
+        nom,
+        prenom,
         phone,
         wilaya,
         is_painter: body.is_painter ? 1 : 0,
@@ -107,15 +79,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       .$returningId();
 
     return NextResponse.json({ success: true, participantId: inserted.id, requiresInvoice: true });
-  } catch (e: unknown) {
-    // Race on the unique phone index → friendly 409 instead of a 500.
-    // No participantId is returned, so the client cannot proceed to upload.
-    if (typeof e === 'object' && e !== null && 'code' in e && (e as { code: string }).code === 'ER_DUP_ENTRY') {
-      return NextResponse.json(
-        { error: 'Ce numéro de téléphone est déjà inscrit.', alreadyRegistered: true },
-        { status: 409 }
-      );
-    }
+  } catch {
     return NextResponse.json({ error: 'Erreur serveur. Réessayez.' }, { status: 500 });
   }
 }

@@ -1,8 +1,8 @@
 import { db } from '@/lib/db/index';
 import { participants, invoices } from '@/lib/db/schema';
-import { eq, like, or, count, max, desc, and, SQL } from 'drizzle-orm';
+import { eq, like, or, count, desc, and, sql, inArray, SQL } from 'drizzle-orm';
 
-export const EXPORT_HEADER = ['ID', 'Nom complet', 'Téléphone', 'Wilaya', 'Peintre', 'Statut', 'Factures', 'Meilleure facture (DA)', 'Date inscription'];
+export const EXPORT_HEADER = ['ID', 'Nom complet', 'Téléphone', 'Magasin', 'Peintre', 'Statut', 'Factures', 'Total accepté (DA)', 'Date inscription'];
 
 export type ExportRow = (string | number)[];
 
@@ -19,33 +19,48 @@ export async function getExportRows(search: string, statusFilter: string): Promi
     conditions.push(eq(participants.status, statusFilter as 'pending' | 'approved' | 'rejected'));
   }
 
-  const rows = await db
+  const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+  const groups = await db
     .select({
-      id:            participants.id,
-      full_name:     participants.full_name,
       phone:         participants.phone,
-      wilaya:        participants.wilaya,
-      is_painter:    participants.is_painter,
-      status:        participants.status,
-      created_at:    participants.created_at,
       invoice_count: count(invoices.id),
-      best_invoice:  max(invoices.amount_detected),
+      total_amount:  sql<string>`SUM(CASE WHEN ${invoices.status} = 'accepted' THEN ${invoices.amount_detected} ELSE 0 END)`,
+      last_created:  sql<string>`MAX(${participants.created_at})`,
     })
     .from(participants)
     .leftJoin(invoices, eq(invoices.participant_id, participants.id))
-    .where(conditions.length > 0 ? and(...conditions) : undefined)
-    .groupBy(participants.id)
-    .orderBy(desc(participants.created_at));
+    .where(where)
+    .groupBy(participants.phone)
+    .orderBy(desc(sql`MAX(${participants.created_at})`));
 
-  return rows.map(r => [
-    r.id,
-    r.full_name,
-    r.phone,
-    r.wilaya,
-    r.is_painter ? 'Oui' : 'Non',
-    r.status,
-    Number(r.invoice_count),
-    r.best_invoice ? Number(r.best_invoice) : '',
-    r.created_at ? new Date(r.created_at).toLocaleString('fr-DZ') : '',
-  ]);
+  const phones = groups.map(g => g.phone);
+  const subsByPhone = new Map<string, (typeof participants.$inferSelect)[]>();
+  if (phones.length > 0) {
+    const subs = await db.select().from(participants).where(inArray(participants.phone, phones)).orderBy(desc(participants.created_at));
+    for (const s of subs) subsByPhone.set(s.phone, [...(subsByPhone.get(s.phone) ?? []), s]);
+  }
+
+  // Same "approved wins" rule as the dashboard's grouped row status.
+  function groupStatus(phone: string): 'pending' | 'approved' | 'rejected' {
+    const subs = subsByPhone.get(phone) ?? [];
+    if (subs.some(s => s.status === 'approved')) return 'approved';
+    if (subs.some(s => s.status === 'pending'))  return 'pending';
+    return 'rejected';
+  }
+
+  return groups.map(g => {
+    const rep = subsByPhone.get(g.phone)![0]; // most recent submission represents name/wilaya/painter
+    return [
+      rep.id,
+      rep.full_name,
+      g.phone,
+      rep.wilaya,
+      rep.is_painter ? 'Oui' : 'Non',
+      groupStatus(g.phone),
+      Number(g.invoice_count),
+      Number(g.total_amount) || '',
+      g.last_created ? new Date(g.last_created).toLocaleString('fr-DZ') : '',
+    ];
+  });
 }

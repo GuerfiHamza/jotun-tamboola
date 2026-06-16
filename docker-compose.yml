@@ -1,0 +1,52 @@
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASS}
+    volumes:
+      - db_data:/var/lib/mysql
+      # Any .sql files here run ONCE on first init (empty data dir).
+      # Drop your clean-rebuild.sql here to auto-create the schema.
+      - ./db-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    # Not exposed to the host by default — only the app reaches it over the
+    # internal network. Uncomment to connect with a local client for admin.
+    # ports:
+    #   - "127.0.0.1:3306:3306"
+
+  app:
+    image: jotun:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DB_HOST: db
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      JWT_SECRET: ${JWT_SECRET}
+      GEMINI_API_KEY_1: ${GEMINI_API_KEY_1}
+      GEMINI_API_KEY_2: ${GEMINI_API_KEY_2:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.0-flash}
+      INVOICE_MIN_AMOUNT: ${INVOICE_MIN_AMOUNT:-20000}
+      CRON_SECRET: ${CRON_SECRET}
+      TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
+    volumes:
+      # Invoice files persist across container restarts/redeploys.
+      - uploads:/app/private_uploads
+    ports:
+      - "127.0.0.1:3000:3000"   # behind your reverse proxy / Cloudflare tunnel
+
+volumes:
+  db_data:
+  uploads:

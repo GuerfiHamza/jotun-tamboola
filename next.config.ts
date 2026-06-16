@@ -25,6 +25,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   poweredByHeader: false,
   // pdfkit loads its .afm font files from node_modules at runtime —
   // bundling breaks those paths (ENOENT Helvetica.afm). Keep them external.
