@@ -185,7 +185,7 @@ const fr = {
         pendingTitle: 'Remettre en attente',
         page: 'Page',
         phoneResubmittedTooltip: 'Ce numéro a soumis plusieurs fois',
-        phoneResubmittedBadge: 'soumis',
+        phoneResubmittedBadge: 'Soumis',
       },
       detail: {
         title: 'Détails du participant',
@@ -201,7 +201,7 @@ const fr = {
         reject: 'Refuser',
         invoices: 'Factures',
         noInvoices: 'Aucune facture soumise',
-        submissionsCount: 'soumission(s) pour ce numéro',
+        submissionsCount: 'Soumission(s) pour ce numéro',
         totalAmount: 'Total accepté',
       },
       invoiceCard: {
