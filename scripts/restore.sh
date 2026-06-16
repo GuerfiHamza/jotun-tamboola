@@ -29,8 +29,8 @@ if [[ -z "$DB_ARCHIVE" && -z "$UP_ARCHIVE" ]]; then
   echo "Nothing to do. Pass --db <file> and/or --uploads <file>."; exit 1
 fi
 
-if [[ -f .env ]]; then set -a; source .env; set +a; fi
-: "${DB_NAME:?DB_NAME not set (check .env)}"
+if [[ -f .env.local ]]; then set -a; source .env.local; set +a; fi
+: "${DB_NAME:?DB_NAME not set (check .env.local)}"
 DB_PASS_FOR_RESTORE="${DB_ROOT_PASSWORD:-${DB_PASS:?need DB_PASS or DB_ROOT_PASSWORD}}"
 DB_USER_FOR_RESTORE="root"
 [[ -n "${DB_ROOT_PASSWORD:-}" ]] || DB_USER_FOR_RESTORE="$DB_USER"

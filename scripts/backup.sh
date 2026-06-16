@@ -21,10 +21,10 @@ DB_SERVICE="${DB_SERVICE:-db}"
 APP_SERVICE="${APP_SERVICE:-app}"
 
 # Load DB creds from .env (DB_NAME, DB_USER, DB_PASS, DB_ROOT_PASSWORD)
-if [[ -f .env ]]; then
-  set -a; source .env; set +a
+if [[ -f .env.local ]]; then
+  set -a; source .env.local; set +a
 fi
-: "${DB_NAME:?DB_NAME not set (check .env)}"
+: "${DB_NAME:?DB_NAME not set (check .env.local)}"
 DB_PASS_FOR_DUMP="${DB_ROOT_PASSWORD:-${DB_PASS:?need DB_PASS or DB_ROOT_PASSWORD}}"
 DB_USER_FOR_DUMP="${DB_ROOT_PASSWORD:+root}"
 DB_USER_FOR_DUMP="${DB_USER_FOR_DUMP:-${DB_USER}}"
