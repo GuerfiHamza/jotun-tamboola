@@ -658,7 +658,7 @@ export default function LandingClient({ locale, dict }: { locale: Locale; dict: 
                 {errorMsg && (
                   <div
                     className="rounded-xl p-4 flex gap-3 items-start text-sm"
-                    style={{ background: 'rgba(13,42,148,0.08)', border: '1px solid rgba(13,42,148,0.2)', color: '#9fb3f0', animation: 'bounceIn 0.4s ease both' }}
+                    style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', animation: 'bounceIn 0.4s ease both' }}
                   >
                     <svg className="w-5 h-5 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
