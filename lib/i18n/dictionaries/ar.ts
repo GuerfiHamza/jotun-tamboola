@@ -72,6 +72,7 @@ const ar: Dictionary = {
         storeRequired: 'يرجى اختيار نقطة البيع.',
         invoiceRequiredPainter: 'يرجى إرفاق فاتورة جوتن.',
         consentRequired: 'يرجى الموافقة على شروط المشاركة.',
+        captchaRequired: 'يرجى إكمال التحقق من عدم كونك روبوت.',
         invoiceRequired: 'يرجى إرفاق فاتورة جوتن.',
         invoiceRejectedFallback: 'لا يمكن قبول هذه الفاتورة.',
         alreadyRegistered: 'رقم الهاتف هذا مسجّل بالفعل.',

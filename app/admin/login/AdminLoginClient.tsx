@@ -1,9 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
 import type { Locale } from '@/lib/i18n/locale';
 import type { Dictionary } from '@/lib/i18n/dictionaries';
+import { getTheme, ThemeToggle, ADMIN_THEME_KEY } from '@/lib/adminTheme';
 import Link from 'next/link';
 export default function AdminLoginClient({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const router = useRouter();
@@ -12,6 +13,17 @@ export default function AdminLoginClient({ locale, dict }: { locale: Locale; dic
   const [error,   setError]   = useState('');
   const [loading, setLoading] = useState(false);
   const [showPw,  setShowPw]  = useState(false);
+  const [dark, setDark] = useState(false); // light default, matches server render; synced from localStorage below
+  const th = getTheme(dark);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDark(localStorage.getItem(ADMIN_THEME_KEY) === 'dark');
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(ADMIN_THEME_KEY, dark ? 'dark' : 'light');
+  }, [dark]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,35 +49,38 @@ export default function AdminLoginClient({ locale, dict }: { locale: Locale; dic
   return (
     <main
       className="min-h-screen flex items-center justify-center p-4 overflow-hidden relative"
-      style={{ background: '#08080f' }}
+      style={{ background: th.page }}
     >
-      {/* Background decoration */}
-      <div className="absolute inset-0 pointer-events-none" aria-hidden>
-        <div
-          className="absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(13,42,148,0.14) 0%, transparent 70%)' }}
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: 'linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)',
-            backgroundSize: '64px 64px',
-          }}
-        />
-        {/* Orb */}
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 rounded-full blur-[120px]"
-          style={{ background: 'rgba(13,42,148,0.06)', animation: 'float 8s ease-in-out infinite' }}
-        />
-        {/* Rotating ring */}
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-175 h-175 rounded-full"
-          style={{ border: '1px dashed rgba(255,255,255,0.03)', animation: 'rotateSlow 30s linear infinite' }}
-        />
-      </div>
+      {/* Background decoration (only visible against the dark theme) */}
+      {dark && (
+        <div className="absolute inset-0 pointer-events-none" aria-hidden>
+          <div
+            className="absolute inset-0"
+            style={{ background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(13,42,148,0.14) 0%, transparent 70%)' }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: 'linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)',
+              backgroundSize: '64px 64px',
+            }}
+          />
+          {/* Orb */}
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 rounded-full blur-[120px]"
+            style={{ background: 'rgba(13,42,148,0.06)', animation: 'float 8s ease-in-out infinite' }}
+          />
+          {/* Rotating ring */}
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-175 h-175 rounded-full"
+            style={{ border: '1px dashed rgba(255,255,255,0.03)', animation: 'rotateSlow 30s linear infinite' }}
+          />
+        </div>
+      )}
 
-      <div className="absolute top-4 inset-x-4 flex justify-end">
-        <LanguageSwitcher locale={locale} dark />
+      <div className="absolute top-4 inset-x-4 flex justify-between">
+        <ThemeToggle dark={dark} onToggle={() => setDark(d => !d)} dict={dict} />
+        <LanguageSwitcher locale={locale} dark={dark} />
       </div>
 
       <div className="relative w-full max-w-sm" style={{ animation: 'fadeInUp 0.6s ease-out both' }}>
@@ -78,20 +93,20 @@ export default function AdminLoginClient({ locale, dict }: { locale: Locale; dic
           >
             J
           </div>
-          <h1 className="text-2xl font-black text-white tracking-tight">{t.title}</h1>
-          <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>{t.subtitle}</p>
+          <h1 className="text-2xl font-black tracking-tight" style={{ color: th.text }}>{t.title}</h1>
+          <p className="text-sm mt-1" style={{ color: th.muted }}>{t.subtitle}</p>
         </div>
 
         {/* Card */}
         <div
           className="relative overflow-hidden rounded-3xl"
-          style={{ background: 'linear-gradient(135deg,#0f0f1c,#12121f)', border: '1px solid rgba(255,255,255,0.07)' }}
+          style={{ background: th.panel, border: `1px solid ${th.border}` }}
         >
           {/* Top accent line */}
           <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(13,42,148,0.6),transparent)' }} aria-hidden />
 
           <div className="px-8 pt-7 pb-2">
-            <p className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: 'rgba(255,255,255,0.2)' }}>{t.secureConnection}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: th.faint }}>{t.secureConnection}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 pt-4 space-y-5">
@@ -100,7 +115,7 @@ export default function AdminLoginClient({ locale, dict }: { locale: Locale; dic
             {error && (
                 <div
                 className="rounded-xl px-4 py-3 flex gap-3 items-center text-sm"
-                style={{ background: 'rgba(13,42,148,0.08)', border: '1px solid rgba(13,42,148,0.2)', color: '#9fb3f0', animation: 'bounceIn 0.4s ease both' }}
+                style={{ background: 'rgba(13,42,148,0.08)', border: '1px solid rgba(13,42,148,0.2)', color: dark ? '#9fb3f0' : '#0d2a94', animation: 'bounceIn 0.4s ease both' }}
               >
                 <svg viewBox="0 0 20 20" className="w-4 h-4 shrink-0" fill="currentColor">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
@@ -111,11 +126,11 @@ export default function AdminLoginClient({ locale, dict }: { locale: Locale; dic
 
             {/* Username */}
             <div>
-              <label className="block text-[11px] font-bold tracking-[0.18em] uppercase mb-2.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              <label className="block text-[11px] font-bold tracking-[0.18em] uppercase mb-2.5" style={{ color: th.muted }}>
                 {t.username}
               </label>
               <div className="relative">
-                <svg viewBox="0 0 20 20" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'rgba(255,255,255,0.2)' }} fill="currentColor">
+                <svg viewBox="0 0 20 20" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: th.faint }} fill="currentColor">
                   <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd"/>
                 </svg>
                 <input
@@ -123,21 +138,21 @@ export default function AdminLoginClient({ locale, dict }: { locale: Locale; dic
                   value={form.username}
                   onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
                   placeholder="admin"
-                  className="w-full rounded-xl pl-10 pr-4 py-3 text-white text-sm placeholder-white/20 outline-none transition-all"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
-                  onFocus={e => { e.currentTarget.style.border = '1px solid rgba(13,42,148,0.45)'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
-                  onBlur={e =>  { e.currentTarget.style.border = '1px solid rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                  className="w-full rounded-xl pl-10 pr-4 py-3 text-sm outline-none transition-all"
+                  style={{ background: th.input, border: `1px solid ${th.border}`, color: th.text }}
+                  onFocus={e => { e.currentTarget.style.border = '1px solid rgba(13,42,148,0.45)'; }}
+                  onBlur={e =>  { e.currentTarget.style.border = `1px solid ${th.border}`; }}
                 />
               </div>
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-[11px] font-bold tracking-[0.18em] uppercase mb-2.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              <label className="block text-[11px] font-bold tracking-[0.18em] uppercase mb-2.5" style={{ color: th.muted }}>
                 {t.password}
               </label>
               <div className="relative">
-                <svg viewBox="0 0 20 20" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'rgba(255,255,255,0.2)' }} fill="currentColor">
+                <svg viewBox="0 0 20 20" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: th.faint }} fill="currentColor">
                   <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"/>
                 </svg>
                 <input
@@ -145,18 +160,18 @@ export default function AdminLoginClient({ locale, dict }: { locale: Locale; dic
                   value={form.password}
                   onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                   placeholder="••••••••"
-                  className="w-full rounded-xl pl-10 pr-11 py-3 text-white text-sm placeholder-white/20 outline-none transition-all"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
-                  onFocus={e => { e.currentTarget.style.border = '1px solid rgba(13,42,148,0.45)'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
-                  onBlur={e =>  { e.currentTarget.style.border = '1px solid rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                  className="w-full rounded-xl pl-10 pr-11 py-3 text-sm outline-none transition-all"
+                  style={{ background: th.input, border: `1px solid ${th.border}`, color: th.text }}
+                  onFocus={e => { e.currentTarget.style.border = '1px solid rgba(13,42,148,0.45)'; }}
+                  onBlur={e =>  { e.currentTarget.style.border = `1px solid ${th.border}`; }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPw(v => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg transition-colors"
-                  style={{ color: 'rgba(255,255,255,0.3)' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.7)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.3)'; }}
+                  style={{ color: th.faint }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = th.sub; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = th.faint; }}
                   aria-label={showPw ? t.hidePassword : t.showPassword}
                 >
                   {showPw ? (
@@ -206,9 +221,9 @@ export default function AdminLoginClient({ locale, dict }: { locale: Locale; dic
           <Link
             href="/"
             className="text-xs transition-colors"
-            style={{ color: 'rgba(255,255,255,0.2)' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.5)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.2)'; }}
+            style={{ color: th.faint }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = th.sub; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = th.faint; }}
           >
             {t.backToSite}
           </Link>

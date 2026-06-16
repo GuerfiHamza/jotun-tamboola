@@ -2,6 +2,7 @@
 import PhotoTips from './components/PhotoTips';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import { useState, useRef, useEffect } from 'react';
+import Turnstile from 'react-turnstile';
 import { STORES } from '@/lib/stores';
 import type { Locale } from '@/lib/i18n/locale';
 import type { Dictionary } from '@/lib/i18n/dictionaries';
@@ -475,20 +476,25 @@ function StoreSearch({
 export default function LandingClient({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const formRef = useRef<HTMLDivElement>(null);
   const [form, setForm] = useState<FormState>({ nom: '', prenom: '', phone: '', wilaya: '', is_painter: false, consent: false, invoice: null });
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const turnstileSitekey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const [step, setStep] = useState<Step>('form');
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploadResult, setUploadResult] = useState<{ accepted: boolean; message: string } | null>(null);
   const [scrolled, setScrolled] = useState(false);
-  const [dark, setDark] = useState<boolean>(
-    () => typeof window !== 'undefined' && localStorage.getItem('jotun-theme') === 'dark'
-  );
+  const [dark, setDark] = useState(false); // light default, matches server render; synced from localStorage below
 
   const { ref: prizesRef, visible: prizesVisible } = useInView();
   const { ref: faqRef, visible: faqVisible } = useInView();
 
   const th = getTheme(dark);
   const t = dict.landing;
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDark(localStorage.getItem('jotun-theme') === 'dark');
+  }, []);
 
   // Sync theme to DOM + localStorage whenever it changes
   useEffect(() => {
@@ -526,6 +532,7 @@ export default function LandingClient({ locale, dict }: { locale: Locale; dict: 
     if (form.is_painter && !form.invoice) { setErrorMsg(errors.invoiceRequiredPainter); return; }
     if (!form.consent) { setErrorMsg(errors.consentRequired); return; }
     if (!form.invoice) { setErrorMsg(errors.invoiceRequired); return; }
+    if (turnstileSitekey && !turnstileToken) { setErrorMsg(errors.captchaRequired); return; }
 
     setLoading(true);
     try {
@@ -536,7 +543,7 @@ export default function LandingClient({ locale, dict }: { locale: Locale; dict: 
         const checkData = await checkRes.json() as { error?: string; ok?: boolean };
         if (!checkRes.ok) { setErrorMsg(checkData.error ?? errors.invoiceRejectedFallback); setLoading(false); return; }
       }
-      const regRes = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-requested-with': 'XMLHttpRequest' }, body: JSON.stringify({ nom: form.nom.trim(), prenom: form.prenom.trim(), phone, wilaya: form.wilaya, is_painter: form.is_painter }) });
+      const regRes = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-requested-with': 'XMLHttpRequest' }, body: JSON.stringify({ nom: form.nom.trim(), prenom: form.prenom.trim(), phone, wilaya: form.wilaya, is_painter: form.is_painter, turnstileToken }) });
       const regData = await regRes.json() as { error?: string; participantId?: number; requiresInvoice?: boolean; alreadyRegistered?: boolean; hasInvoice?: boolean };
       if (!regRes.ok) {
         if (regData.alreadyRegistered) {
@@ -550,6 +557,7 @@ export default function LandingClient({ locale, dict }: { locale: Locale; dict: 
         const fd = new FormData();
         fd.append('invoice', form.invoice);
         fd.append('participantId', String(regData.participantId));
+        fd.append('turnstileToken', turnstileToken);
         const upRes = await fetch('/api/upload-invoice', { method: 'POST', headers: { 'x-requested-with': 'XMLHttpRequest' }, body: fd });
         const upData = await upRes.json() as { error?: string; accepted?: boolean; message?: string };
         if (!upRes.ok) { setErrorMsg(upData.error ?? errors.uploadErrorFallback); setLoading(false); return; }
@@ -821,6 +829,16 @@ export default function LandingClient({ locale, dict }: { locale: Locale; dict: 
                     </span>
                   </label>
                 </div>
+
+                {/* Bot check */}
+                {turnstileSitekey && (
+                  <Turnstile
+                    sitekey={turnstileSitekey}
+                    theme={th.isDark ? 'dark' : 'light'}
+                    onVerify={setTurnstileToken}
+                    onExpire={() => setTurnstileToken('')}
+                  />
+                )}
 
                 {/* Submit */}
                 <RippleButton

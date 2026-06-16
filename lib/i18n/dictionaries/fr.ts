@@ -70,6 +70,7 @@ const fr = {
         storeRequired: 'Veuillez sélectionner votre point de vente.',
         invoiceRequiredPainter: 'Veuillez joindre votre facture Jotun.',
         consentRequired: 'Veuillez accepter les conditions de participation.',
+        captchaRequired: 'Veuillez compléter la vérification anti-robot.',
         invoiceRequired: 'Veuillez joindre votre facture Jotun.',
         invoiceRejectedFallback: 'Cette facture ne peut pas être acceptée.',
         alreadyRegistered: 'Ce numéro de téléphone est déjà inscrit.',
