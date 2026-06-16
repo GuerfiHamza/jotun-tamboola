@@ -26,6 +26,10 @@ COPY . .
 # next/font fetches Geist from Google Fonts at build time — the builder needs
 # outbound network for that (it does, during `docker build`).
 ENV NEXT_TELEMETRY_DISABLED=1
+# NEXT_PUBLIC_* vars are inlined into the client bundle at build time, not
+# read at runtime — must come in as a build ARG, not a compose `environment:`.
+ARG NEXT_PUBLIC_TURNSTILE_SITE_KEY
+ENV NEXT_PUBLIC_TURNSTILE_SITE_KEY=${NEXT_PUBLIC_TURNSTILE_SITE_KEY}
 RUN npm run build
 
 # ---- runner: minimal runtime ----

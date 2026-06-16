@@ -24,6 +24,12 @@ services:
 
   app:
     image: jotun:latest
+    build:
+      context: .
+      args:
+        # NEXT_PUBLIC_* must be a build arg — Next.js inlines it at build
+        # time, setting it under `environment:` below has no effect on it.
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-}
     restart: unless-stopped
     depends_on:
       db:
