@@ -1,9 +1,7 @@
-import { getLocale } from '@/lib/i18n/locale';
-import { getDictionary } from '@/lib/i18n/dictionaries';
-import LandingClient from './LandingClient';
+import { redirect } from 'next/navigation';
 
-export default async function Page() {
-  const locale = await getLocale();
-  const dict = await getDictionary(locale);
-  return <LandingClient locale={locale} dict={dict} />;
+// No public site anymore — stores and the master work entirely from the
+// authenticated dashboard. Root just sends you to login.
+export default function Page() {
+  redirect('/admin/login');
 }

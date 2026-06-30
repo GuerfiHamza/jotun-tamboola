@@ -1,34 +1,42 @@
 -- =====================================================================
 -- jotun_tamboola — clean database rebuild
--- Drops all tables and recreates them fresh, including the dedup columns.
+-- Drops all tables and recreates them fresh (two-tier accounts model).
 -- WARNING: this DELETES all existing data.
 -- =====================================================================
 
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `invoices`;
 DROP TABLE IF EXISTS `participants`;
+DROP TABLE IF EXISTS `accounts`;
 DROP TABLE IF EXISTS `admins`;
 DROP TABLE IF EXISTS `__drizzle_migrations`;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ---------------------------------------------------------------------
--- admins
+-- accounts  (master + store accounts; store_name doubles as username)
 -- ---------------------------------------------------------------------
-CREATE TABLE `admins` (
+CREATE TABLE `accounts` (
 	`id` int AUTO_INCREMENT NOT NULL,
-	`username` varchar(100) NOT NULL,
+	`store_name` varchar(150) NOT NULL,
+	`phone` varchar(30) NOT NULL,
 	`password` varchar(255) NOT NULL,
+	`role` enum('master','store') NOT NULL DEFAULT 'store',
+	`active` tinyint NOT NULL DEFAULT 1,
+	`must_change_password` tinyint NOT NULL DEFAULT 1,
 	`created_at` timestamp DEFAULT (now()),
-	CONSTRAINT `admins_id` PRIMARY KEY(`id`),
-	CONSTRAINT `admins_username_unique` UNIQUE(`username`)
+	CONSTRAINT `accounts_id` PRIMARY KEY(`id`),
+	CONSTRAINT `accounts_store_name_unique` UNIQUE(`store_name`)
 );
 
 -- ---------------------------------------------------------------------
--- participants
+-- participants  (each submission belongs to one store account)
 -- ---------------------------------------------------------------------
 CREATE TABLE `participants` (
 	`id` int AUTO_INCREMENT NOT NULL,
+	`account_id` int NOT NULL,
 	`full_name` varchar(255) NOT NULL,
+	`nom` varchar(100),
+	`prenom` varchar(100),
 	`phone` varchar(30) NOT NULL,
 	`wilaya` varchar(100) NOT NULL,
 	`is_painter` tinyint NOT NULL DEFAULT 0,
@@ -36,8 +44,7 @@ CREATE TABLE `participants` (
 	`status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
 	`created_at` timestamp DEFAULT (now()),
 	`updated_at` timestamp DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
-	CONSTRAINT `participants_id` PRIMARY KEY(`id`),
-	CONSTRAINT `participants_phone_unique` UNIQUE(`phone`)
+	CONSTRAINT `participants_id` PRIMARY KEY(`id`)
 );
 
 -- ---------------------------------------------------------------------
@@ -61,12 +68,20 @@ CREATE TABLE `invoices` (
 	CONSTRAINT `invoices_id` PRIMARY KEY(`id`)
 );
 
--- Foreign key: invoices.participant_id -> participants.id
+ALTER TABLE `participants`
+	ADD CONSTRAINT `participants_account_id_accounts_id_fk`
+	FOREIGN KEY (`account_id`) REFERENCES `accounts`(`id`)
+	ON DELETE cascade ON UPDATE no action;
+
 ALTER TABLE `invoices`
 	ADD CONSTRAINT `invoices_participant_id_participants_id_fk`
 	FOREIGN KEY (`participant_id`) REFERENCES `participants`(`id`)
 	ON DELETE cascade ON UPDATE no action;
 
--- Indexes for dedup lookups
+CREATE INDEX `idx_participants_account_id` ON `participants` (`account_id`);
 CREATE INDEX `idx_invoices_file_hash` ON `invoices` (`file_hash`);
 CREATE INDEX `idx_invoices_content_key` ON `invoices` (`content_key`);
+
+-- Master account seed. Login: MASTER / ChangeMe!2026 — CHANGE THIS PASSWORD.
+INSERT INTO `accounts` (`store_name`, `phone`, `password`, `role`, `active`, `must_change_password`)
+VALUES ('MASTER', '0000000000', '$2b$12$y.77vj2HDD1CKEjZ7Kryl.JVINd50ruCQJi4ztTdKTqdOl9MZhO1i', 'master', 1, 0);

@@ -1,0 +1,232 @@
+'use client';
+import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
+import type { Locale } from '@/lib/i18n/locale';
+import type { Dictionary } from '@/lib/i18n/dictionaries';
+import { getTheme, ADMIN_THEME_KEY, type Theme } from '@/lib/adminTheme';
+
+type Account = { id: number; store_name: string; phone: string; role: 'master' | 'store'; active: number; created_at: string };
+type Editing = { id?: number; store_name: string; phone: string; active: boolean } | null;
+
+const JSON_HEADERS = { 'Content-Type': 'application/json', 'x-requested-with': 'XMLHttpRequest' };
+
+export default function AccountsClient({ locale }: { locale: Locale; dict: Dictionary }) {
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [listState, setListState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [listError, setListError] = useState('');
+  const [editing, setEditing] = useState<Editing>(null);
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [reveal, setReveal] = useState<{ store: string; password: string } | null>(null); // generated/reset password to hand over
+  const [copied, setCopied] = useState(false);
+  const [dark, setDark] = useState(false);
+  const th = getTheme(dark);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDark(localStorage.getItem(ADMIN_THEME_KEY) === 'dark');
+  }, []);
+
+  const load = useCallback(async () => {
+    setListState('loading'); setListError('');
+    try {
+      const res = await fetch('/api/admin/accounts');
+      if (!res.ok) throw new Error();
+      const data = await res.json() as { accounts: Account[] };
+      setAccounts(data.accounts.filter(a => a.role === 'store'));
+      setListState('ready');
+    } catch {
+      setListError('Chargement impossible.'); setListState('error');
+    }
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
+  async function save() {
+    if (!editing) return;
+    setSaving(true); setError('');
+    try {
+      const isNew = editing.id === undefined;
+      const url = isNew ? '/api/admin/accounts' : `/api/admin/accounts/${editing.id}`;
+      const res = await fetch(url, {
+        method: isNew ? 'POST' : 'PATCH',
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ store_name: editing.store_name.trim(), phone: editing.phone.trim(), active: editing.active }),
+      });
+      const data = await res.json() as { error?: string; password?: string };
+      if (!res.ok) { setError(data.error ?? 'Erreur.'); return; }
+      const store = editing.store_name.trim();
+      setEditing(null);
+      await load();
+      if (data.password) { setCopied(false); setReveal({ store, password: data.password }); } // show temp password once
+    } finally { setSaving(false); }
+  }
+
+  async function resetPassword() {
+    if (!editing?.id) return;
+    setSaving(true); setError('');
+    try {
+      const res = await fetch(`/api/admin/accounts/${editing.id}`, {
+        method: 'PATCH', headers: JSON_HEADERS, body: JSON.stringify({ regenerate_password: true }),
+      });
+      const data = await res.json() as { error?: string; password?: string };
+      if (!res.ok) { setError(data.error ?? 'Erreur.'); return; }
+      const store = editing.store_name.trim();
+      setEditing(null);
+      await load();
+      if (data.password) { setCopied(false); setReveal({ store, password: data.password }); }
+    } finally { setSaving(false); }
+  }
+
+  async function toggleActive(a: Account) {
+    await fetch(`/api/admin/accounts/${a.id}`, { method: 'PATCH', headers: JSON_HEADERS, body: JSON.stringify({ active: !a.active }) });
+    load();
+  }
+
+  async function remove(a: Account) {
+    if (!confirm(`Supprimer le compte « ${a.store_name} » et toutes ses soumissions ? Action irréversible.`)) return;
+    await fetch(`/api/admin/accounts/${a.id}`, { method: 'DELETE', headers: { 'x-requested-with': 'XMLHttpRequest' } });
+    load();
+  }
+
+  return (
+    <main className="min-h-screen" style={{ background: th.page, color: th.text }}>
+      <header className="sticky top-0 z-40 px-6 py-3.5 flex items-center gap-3"
+        style={{ background: th.headerBg, backdropFilter: 'blur(20px)', borderBottom: `1px solid ${th.border}` }}>
+        <Link href="/admin" className="text-sm font-semibold" style={{ color: th.muted }}>
+          {locale === 'ar' ? '→' : '←'} Tableau de bord
+        </Link>
+        <h1 className="font-black text-sm" style={{ color: th.text }}>Comptes magasins</h1>
+        <button onClick={() => { setError(''); setEditing({ store_name: '', phone: '', active: true }); }}
+          className="ms-auto text-xs font-semibold text-white px-4 py-2 rounded-lg active:scale-95"
+          style={{ background: 'linear-gradient(135deg,#0d2a94,#072060)' }}>
+          + Nouveau compte
+        </button>
+      </header>
+
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${th.border}` }}>
+          <table className="w-full text-sm">
+            <thead>
+              <tr style={{ background: th.panelAlt, borderBottom: `1px solid ${th.border}` }}>
+                {['Magasin', 'Téléphone', 'Statut', 'Créé le', 'Actions'].map(h => (
+                  <th key={h} className="text-start px-4 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: th.muted }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {/* 4 states: loading / error / empty / ready */}
+              {listState === 'loading' ? (
+                <tr><td colSpan={5} className="text-center py-16" style={{ color: th.faint }}>
+                  <svg className="w-5 h-5 animate-spin mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Chargement…
+                </td></tr>
+              ) : listState === 'error' ? (
+                <tr><td colSpan={5} className="text-center py-16" style={{ color: '#f87171' }}>
+                  {listError} <button onClick={load} className="underline ms-2">Réessayer</button>
+                </td></tr>
+              ) : accounts.length === 0 ? (
+                <tr><td colSpan={5} className="text-center py-16" style={{ color: th.faint }}>Aucun compte magasin. Créez-en un.</td></tr>
+              ) : accounts.map(a => (
+                <tr key={a.id} style={{ borderBottom: `1px solid ${th.borderSub}` }}>
+                  <td className="px-4 py-3 font-medium" style={{ color: th.text }}>{a.store_name}</td>
+                  <td className="px-4 py-3" style={{ color: th.sub }}>{a.phone}</td>
+                  <td className="px-4 py-3">
+                    <button onClick={() => toggleActive(a)}
+                      className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase"
+                      style={a.active
+                        ? { background: 'rgba(16,185,129,0.12)', color: '#34d399' }
+                        : { background: 'rgba(248,113,113,0.15)', color: '#ef4444' }}>
+                      {a.active ? 'Actif' : 'Inactif'}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3 text-xs" style={{ color: th.muted }}>{new Date(a.created_at).toLocaleDateString('fr-DZ')}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-2">
+                      <button onClick={() => { setError(''); setEditing({ id: a.id, store_name: a.store_name, phone: a.phone, active: !!a.active }); }}
+                        className="text-xs font-semibold px-2 py-1 rounded-lg" style={{ background: th.input, color: th.sub }}>Modifier</button>
+                      <button onClick={() => remove(a)}
+                        className="text-xs font-semibold px-2 py-1 rounded-lg" style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171' }}>Supprimer</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Create / edit modal */}
+      {editing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)' }} onClick={() => setEditing(null)}>
+          <div className="w-full max-w-sm rounded-2xl p-6" style={{ background: th.panel, border: `1px solid ${th.border}` }} onClick={e => e.stopPropagation()}>
+            <h3 className="font-bold mb-4" style={{ color: th.text }}>{editing.id === undefined ? 'Nouveau compte magasin' : 'Modifier le compte'}</h3>
+            {error && <div className="mb-3 rounded-lg px-3 py-2 text-xs" style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171' }}>{error}</div>}
+            <div className="space-y-3">
+              <Field label="Nom du magasin" th={th} value={editing.store_name} onChange={v => setEditing({ ...editing, store_name: v })} />
+              <Field label="Téléphone" th={th} value={editing.phone} onChange={v => setEditing({ ...editing, phone: v })} />
+              <label className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl" style={{ border: `1px solid ${th.border}` }}>
+                <span className="text-sm" style={{ color: th.sub }}>Compte actif</span>
+                <input type="checkbox" checked={editing.active} onChange={e => setEditing({ ...editing, active: e.target.checked })} />
+              </label>
+              {editing.id === undefined && (
+                <p className="text-xs" style={{ color: th.faint }}>Un mot de passe temporaire sera généré automatiquement.</p>
+              )}
+              {editing.id !== undefined && (
+                <button onClick={resetPassword} disabled={saving}
+                  className="w-full text-xs font-semibold py-2.5 rounded-xl disabled:opacity-40"
+                  style={{ background: 'rgba(59,130,246,0.12)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.25)' }}>
+                  Réinitialiser le mot de passe
+                </button>
+              )}
+            </div>
+            <div className="flex gap-2 mt-5">
+              <button onClick={() => setEditing(null)} className="flex-1 text-sm font-semibold py-2.5 rounded-xl" style={{ background: th.input, color: th.muted }}>Annuler</button>
+              <button onClick={save} disabled={saving} className="flex-1 text-sm font-bold text-white py-2.5 rounded-xl disabled:opacity-40"
+                style={{ background: 'linear-gradient(135deg,#0d2a94,#072060)' }}>{saving ? '…' : 'Enregistrer'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Generated/reset password reveal (shown once) */}
+      {reveal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)' }}>
+          <div className="w-full max-w-sm rounded-2xl p-6 text-center" style={{ background: th.panel, border: '1px solid rgba(16,185,129,0.3)' }}>
+            <h3 className="font-bold mb-1" style={{ color: th.text }}>Mot de passe temporaire</h3>
+            <p className="text-xs mb-4" style={{ color: th.muted }}>
+              Communiquez-le à « {reveal.store} ». Il devra le changer à la première connexion. Ce code ne sera plus affiché.
+            </p>
+            <div className="flex items-center justify-center gap-2 rounded-xl px-4 py-3 mb-4 font-mono text-lg font-bold tracking-wider"
+              style={{ background: th.input, color: '#34d399' }}>
+              {reveal.password}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { navigator.clipboard?.writeText(reveal.password); setCopied(true); }}
+                className="flex-1 text-sm font-semibold py-2.5 rounded-xl" style={{ background: th.input, color: th.sub }}>
+                {copied ? '✓ Copié' : 'Copier'}
+              </button>
+              <button onClick={() => setReveal(null)} className="flex-1 text-sm font-bold text-white py-2.5 rounded-xl"
+                style={{ background: 'linear-gradient(135deg,#0d2a94,#072060)' }}>Fermer</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}
+
+function Field({ label, value, onChange, th, type = 'text' }: { label: string; value: string; onChange: (v: string) => void; th: Theme; type?: string }) {
+  return (
+    <div>
+      <label className="block text-[11px] font-bold tracking-[0.12em] uppercase mb-1.5" style={{ color: th.muted }}>{label}</label>
+      <input type={type} value={value} onChange={e => onChange(e.target.value)}
+        className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
+        style={{ background: th.input, border: `1px solid ${th.border}`, color: th.text }} />
+    </div>
+  );
+}

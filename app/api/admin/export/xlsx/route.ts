@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminFromRequest } from '@/lib/adminAuth';
+import { participantScope } from '@/lib/scope';
 import { getExportRows, EXPORT_HEADER } from '@/lib/exportData';
 import ExcelJS from 'exceljs';
 
 export async function GET(req: NextRequest) {
-  if (!await getAdminFromRequest())
+  const acc = await getAdminFromRequest();
+  if (!acc)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
-  const rows = await getExportRows(searchParams.get('search') || '', searchParams.get('status') || '');
+  const rows = await getExportRows(searchParams.get('search') || '', searchParams.get('status') || '', participantScope(acc));
 
   const wb = new ExcelJS.Workbook();
   wb.creator = 'Jotun Tamboola';

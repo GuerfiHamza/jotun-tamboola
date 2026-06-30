@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import { db } from '@/lib/db/index';
-import { participants, invoices } from '@/lib/db/schema';
+import { participants, invoices, accounts } from '@/lib/db/schema';
 import { eq, count } from 'drizzle-orm';
 import { checkCsrf } from '@/lib/csrf';
 import { checkRateLimit } from '@/lib/rateLimit';
+import { getAdminFromRequest } from '@/lib/adminAuth';
 import { analyzeInvoice } from '@/lib/gemini';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
@@ -24,11 +25,19 @@ const MAX_ATTEMPTS = 3;
 const UPLOAD_DIR = join(process.cwd(), 'private_uploads');
 
 export async function POST(req: NextRequest) {
+  const acc = await getAdminFromRequest();
+  if (!acc) return NextResponse.json({ error: 'Non autorisé.' }, { status: 401 });
+  if (acc.role !== 'store')
+    return NextResponse.json({ error: 'Seuls les comptes magasin peuvent soumettre.' }, { status: 403 });
+
+  const [me] = await db.select({ must: accounts.must_change_password }).from(accounts).where(eq(accounts.id, acc.accountId)).limit(1);
+  if (me?.must)
+    return NextResponse.json({ error: 'Veuillez d’abord changer votre mot de passe.' }, { status: 403 });
+
   const csrfError = checkCsrf(req);
   if (csrfError) return csrfError;
 
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-  if (!checkRateLimit(`upload:${ip}`, 10)) {
+  if (!checkRateLimit(`upload:${acc.accountId}`, 30)) {
     return NextResponse.json({ error: 'Trop de tentatives. Réessayez plus tard.' }, { status: 429 });
   }
 
@@ -42,9 +51,8 @@ export async function POST(req: NextRequest) {
   const participantIdRaw = formData.get('participantId');
   const file = formData.get('invoice');
 
-  // Bot check already happened in /api/register (Turnstile tokens are
-  // single-use, so it can't be re-verified here); this upload still
-  // requires a participantId from that successful registration.
+  // This upload attaches to a participant the store created via /api/register;
+  // ownership is enforced below.
   if (!participantIdRaw || !file || !(file instanceof File)) {
     return NextResponse.json({ error: 'participantId et facture sont requis.' }, { status: 400 });
   }
@@ -63,7 +71,7 @@ export async function POST(req: NextRequest) {
     .where(eq(participants.id, participantId))
     .limit(1);
 
-  if (!participant) {
+  if (!participant || participant.account_id !== acc.accountId) {
     return NextResponse.json({ error: 'Participant introuvable.' }, { status: 404 });
   }
 

@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import type { Locale } from '@/lib/i18n/locale';
 import type { Dictionary } from '@/lib/i18n/dictionaries';
@@ -228,7 +229,7 @@ function StatCard({ label, value, color, icon, th }: { label: string; value: num
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default function AdminDashboardClient({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+export default function AdminDashboardClient({ locale, dict, role, storeName }: { locale: Locale; dict: Dictionary; role: 'master' | 'store'; storeName: string }) {
   const router = useRouter();
   const t = dict.admin.dashboard;
   const [stats,        setStats]        = useState<Stats | null>(null);
@@ -306,6 +307,18 @@ export default function AdminDashboardClient({ locale, dict }: { locale: Locale;
     if (selected) openParticipant(selected.id);
   }
 
+  async function deleteSubmission(id: number) {
+    // ponytail: literal string instead of a dict key in two locale files.
+    if (!confirm('Supprimer cette soumission et ses factures ? Action irréversible.')) return;
+    await fetch(`/api/admin/participants/${id}`, {
+      method: 'DELETE',
+      headers: { 'x-requested-with': 'XMLHttpRequest' },
+    });
+    setSelected(null);
+    fetchParticipants(page);
+    fetchStats();
+  }
+
   async function setInvoiceStatus(id: number, status: 'accepted' | 'rejected') {
     await fetch(`/api/admin/invoice/${id}/status`, {
       method: 'PATCH',
@@ -366,6 +379,23 @@ export default function AdminDashboardClient({ locale, dict }: { locale: Locale;
         </div>
 
         <div className="ms-auto flex items-center gap-3">
+          {/* Role-aware nav: store files submissions, master manages accounts */}
+          {role === 'store' ? (
+            <Link href="/admin/submit"
+              className="text-xs font-semibold text-white px-3 py-1.5 rounded-lg transition-all active:scale-95"
+              style={{ background: 'linear-gradient(135deg,#0d2a94,#072060)' }}>
+              + Nouvelle soumission
+            </Link>
+          ) : (
+            <Link href="/admin/accounts"
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors text-blue-400 hover:text-blue-300"
+              style={{ border: `1px solid ${th.border}` }}>
+              Comptes magasins
+            </Link>
+          )}
+          <span className="text-xs font-semibold hidden md:inline" style={{ color: th.muted }}>
+            {role === 'master' ? 'Maître' : storeName}
+          </span>
           <ThemeToggle dark={dark} onToggle={() => setDark(d => !d)} dict={dict} />
           <LanguageSwitcher locale={locale} dark={dark} />
 
@@ -699,6 +729,14 @@ export default function AdminDashboardClient({ locale, dict }: { locale: Locale;
                           style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' }}
                         >
                           {t.detail.reject}
+                        </button>
+                        <button
+                          onClick={() => deleteSubmission(sub.id)}
+                          title="Supprimer"
+                          className="text-xs font-bold px-2.5 py-1.5 rounded-lg transition-all active:scale-95"
+                          style={{ background: th.input, color: th.muted, border: `1px solid ${th.border}` }}
+                        >
+                          🗑
                         </button>
                       </div>
                       {subInvoices.length === 0 ? (

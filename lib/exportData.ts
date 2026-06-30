@@ -6,8 +6,9 @@ export const EXPORT_HEADER = ['ID', 'Nom complet', 'Téléphone', 'Magasin', 'Pe
 
 export type ExportRow = (string | number)[];
 
-export async function getExportRows(search: string, statusFilter: string): Promise<ExportRow[]> {
+export async function getExportRows(search: string, statusFilter: string, scope?: SQL): Promise<ExportRow[]> {
   const conditions: SQL[] = [];
+  if (scope) conditions.push(scope);
   if (search) {
     const safe = search.slice(0, 100).replace(/[\\%_]/g, m => `\\${m}`);
     conditions.push(or(
@@ -37,7 +38,8 @@ export async function getExportRows(search: string, statusFilter: string): Promi
   const phones = groups.map(g => g.phone);
   const subsByPhone = new Map<string, (typeof participants.$inferSelect)[]>();
   if (phones.length > 0) {
-    const subs = await db.select().from(participants).where(inArray(participants.phone, phones)).orderBy(desc(participants.created_at));
+    const phoneWhere = scope ? and(inArray(participants.phone, phones), scope) : inArray(participants.phone, phones);
+    const subs = await db.select().from(participants).where(phoneWhere).orderBy(desc(participants.created_at));
     for (const s of subs) subsByPhone.set(s.phone, [...(subsByPhone.get(s.phone) ?? []), s]);
   }
 

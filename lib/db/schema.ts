@@ -1,7 +1,19 @@
 import { mysqlTable, int, varchar, tinyint, timestamp, decimal, text, mysqlEnum } from 'drizzle-orm/mysql-core';
 
+export const accounts = mysqlTable('accounts', {
+  id:         int('id').autoincrement().primaryKey(),
+  store_name: varchar('store_name', { length: 150 }).notNull().unique(), // doubles as the login username
+  phone:      varchar('phone', { length: 30 }).notNull(),
+  password:   varchar('password', { length: 255 }).notNull(),
+  role:       mysqlEnum('role', ['master', 'store']).default('store').notNull(),
+  active:     tinyint('active').default(1).notNull(),
+  must_change_password: tinyint('must_change_password').default(1).notNull(), // store must set its own password on first login
+  created_at: timestamp('created_at').defaultNow(),
+});
+
 export const participants = mysqlTable('participants', {
   id:           int('id').autoincrement().primaryKey(),
+  account_id:   int('account_id').notNull().references(() => accounts.id, { onDelete: 'cascade' }),
   full_name:    varchar('full_name', { length: 255 }).notNull(),
   nom:          varchar('nom', { length: 100 }),
   prenom:       varchar('prenom', { length: 100 }),
@@ -30,15 +42,8 @@ export const invoices = mysqlTable('invoices', {
   uploaded_at:      timestamp('uploaded_at').defaultNow(),
 });
 
-export const admins = mysqlTable('admins', {
-  id:         int('id').autoincrement().primaryKey(),
-  username:   varchar('username', { length: 100 }).notNull().unique(),
-  password:   varchar('password', { length: 255 }).notNull(),
-  created_at: timestamp('created_at').defaultNow(),
-});
-
 // Inferred types — use these everywhere instead of hand-writing interfaces
 export type Participant = typeof participants.$inferSelect;
 export type NewParticipant = typeof participants.$inferInsert;
 export type Invoice = typeof invoices.$inferSelect;
-export type Admin = typeof admins.$inferSelect;
+export type Account = typeof accounts.$inferSelect;

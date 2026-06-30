@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminFromRequest } from '@/lib/adminAuth';
+import { ownsInvoiceFile } from '@/lib/scope';
 import { readFile } from 'fs/promises';
 import path from 'path';
 
@@ -16,13 +17,15 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ filename: string }> }
 ) {
-  const admin = await getAdminFromRequest();
-  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const acc = await getAdminFromRequest();
+  if (!acc) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const filename = path.basename((await params).filename); // belt
   if (!SAFE_NAME.test(filename)) {                          // and suspenders
     return NextResponse.json({ error: 'Invalid filename' }, { status: 400 });
   }
+  if (!await ownsInvoiceFile(acc, filename))
+    return NextResponse.json({ error: 'File not found' }, { status: 404 });
 
   const filePath = path.join(process.cwd(), 'private_uploads', filename);
 

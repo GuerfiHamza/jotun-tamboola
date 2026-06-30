@@ -4,6 +4,7 @@ import { invoices, participants } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { checkCsrf } from '@/lib/csrf';
 import { getAdminFromRequest } from '@/lib/adminAuth';
+import { ownsInvoice } from '@/lib/scope';
 
 const MAX_AMOUNT = 100_000_000; // sanity cap
 
@@ -23,6 +24,8 @@ export async function PATCH(
   if (!Number.isInteger(invoiceId) || invoiceId <= 0) {
     return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
   }
+  if (!await ownsInvoice(admin, invoiceId))
+    return NextResponse.json({ error: 'Facture introuvable' }, { status: 404 });
 
   let amount: unknown;
   try {

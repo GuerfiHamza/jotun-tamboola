@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/index';
-import { admins } from '@/lib/db/schema';
+import { accounts } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { verifyPassword, signAdminToken, DUMMY_HASH } from '@/lib/auth';
 import { checkCsrf } from '@/lib/csrf';
@@ -26,18 +26,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Identifiants incorrects' }, { status: 401 });
   }
 
-  const admin = await db.query.admins.findFirst({
-    where: eq(admins.username, username),
+  const account = await db.query.accounts.findFirst({
+    where: eq(accounts.store_name, username),
   });
 
-  // Always run bcrypt (against a dummy hash if the user doesn't exist)
+  // Always run bcrypt (against a dummy hash if the account doesn't exist)
   // so response time doesn't reveal whether a username is valid.
-  const ok = await verifyPassword(password, admin?.password ?? DUMMY_HASH);
-  if (!admin || !ok) {
+  const ok = await verifyPassword(password, account?.password ?? DUMMY_HASH);
+  if (!account || !ok) {
     return NextResponse.json({ error: 'Identifiants incorrects' }, { status: 401 });
   }
+  // Deactivated store accounts can't log in (master toggles `active`).
+  if (!account.active) {
+    return NextResponse.json({ error: 'Compte désactivé. Contactez l’administrateur.' }, { status: 403 });
+  }
 
-  const token = signAdminToken(admin.id);
+  const token = signAdminToken(account.id, account.role);
   const res = NextResponse.json({ success: true });
 
   res.cookies.set('admin_token', token, {

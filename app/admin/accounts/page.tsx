@@ -5,17 +5,16 @@ import { getDictionary } from '@/lib/i18n/dictionaries';
 import { getAdminFromRequest } from '@/lib/adminAuth';
 import { db } from '@/lib/db/index';
 import { accounts } from '@/lib/db/schema';
-import AdminDashboardClient from './AdminDashboardClient';
+import AccountsClient from './AccountsClient';
 
 export default async function Page() {
   const acc = await getAdminFromRequest();
   if (!acc) redirect('/admin/login');
 
   const me = await db.query.accounts.findFirst({ where: eq(accounts.id, acc.accountId) });
-  if (!me) redirect('/admin/login');
-  if (me.must_change_password) redirect('/admin/change-password');
+  if (!me || me.role !== 'master') redirect('/admin'); // stores have no business here
 
   const locale = await getLocale();
   const dict = await getDictionary(locale);
-  return <AdminDashboardClient locale={locale} dict={dict} role={me.role} storeName={me.store_name} />;
+  return <AccountsClient locale={locale} dict={dict} />;
 }

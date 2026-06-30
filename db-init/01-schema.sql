@@ -1,18 +1,23 @@
 -- jotun_tamboola schema — runs once on first DB init (empty data dir).
--- Matches lib/db/schema.ts: dedup columns on invoices, nom/prenom on
--- participants, phone NOT unique (same number may register multiple times).
+-- Matches lib/db/schema.ts. Two-tier accounts: one master creates store
+-- accounts; each store files submissions tagged with its account_id.
 
-CREATE TABLE IF NOT EXISTS `admins` (
+CREATE TABLE IF NOT EXISTS `accounts` (
 	`id` int AUTO_INCREMENT NOT NULL,
-	`username` varchar(100) NOT NULL,
+	`store_name` varchar(150) NOT NULL,
+	`phone` varchar(30) NOT NULL,
 	`password` varchar(255) NOT NULL,
+	`role` enum('master','store') NOT NULL DEFAULT 'store',
+	`active` tinyint NOT NULL DEFAULT 1,
+	`must_change_password` tinyint NOT NULL DEFAULT 1,
 	`created_at` timestamp DEFAULT (now()),
-	CONSTRAINT `admins_id` PRIMARY KEY(`id`),
-	CONSTRAINT `admins_username_unique` UNIQUE(`username`)
+	CONSTRAINT `accounts_id` PRIMARY KEY(`id`),
+	CONSTRAINT `accounts_store_name_unique` UNIQUE(`store_name`)
 );
 
 CREATE TABLE IF NOT EXISTS `participants` (
 	`id` int AUTO_INCREMENT NOT NULL,
+	`account_id` int NOT NULL,
 	`full_name` varchar(255) NOT NULL,
 	`nom` varchar(100),
 	`prenom` varchar(100),
@@ -43,10 +48,21 @@ CREATE TABLE IF NOT EXISTS `invoices` (
 	CONSTRAINT `invoices_id` PRIMARY KEY(`id`)
 );
 
+ALTER TABLE `participants`
+	ADD CONSTRAINT `participants_account_id_accounts_id_fk`
+	FOREIGN KEY (`account_id`) REFERENCES `accounts`(`id`)
+	ON DELETE cascade ON UPDATE no action;
+
 ALTER TABLE `invoices`
 	ADD CONSTRAINT `invoices_participant_id_participants_id_fk`
 	FOREIGN KEY (`participant_id`) REFERENCES `participants`(`id`)
 	ON DELETE cascade ON UPDATE no action;
 
+CREATE INDEX `idx_participants_account_id` ON `participants` (`account_id`);
 CREATE INDEX `idx_invoices_file_hash` ON `invoices` (`file_hash`);
 CREATE INDEX `idx_invoices_content_key` ON `invoices` (`content_key`);
+
+-- Master account seed. Login: MASTER / ChangeMe!2026 — CHANGE THIS PASSWORD.
+-- (bcrypt hash of 'ChangeMe!2026', cost 12)
+INSERT INTO `accounts` (`store_name`, `phone`, `password`, `role`, `active`, `must_change_password`)
+VALUES ('MASTER', '0000000000', '$2b$12$y.77vj2HDD1CKEjZ7Kryl.JVINd50ruCQJi4ztTdKTqdOl9MZhO1i', 'master', 1, 0);

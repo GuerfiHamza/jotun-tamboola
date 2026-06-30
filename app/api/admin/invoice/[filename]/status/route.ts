@@ -4,6 +4,7 @@ import { invoices, participants } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { checkCsrf } from '@/lib/csrf';
 import { getAdminFromRequest } from '@/lib/adminAuth';
+import { ownsInvoice } from '@/lib/scope';
 
 type InvoiceStatus = 'accepted' | 'rejected';
 
@@ -13,7 +14,8 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ filename: string }> }
 ) {
-  if (!await getAdminFromRequest())
+  const acc = await getAdminFromRequest();
+  if (!acc)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const csrfError = checkCsrf(req);
@@ -22,6 +24,8 @@ export async function PATCH(
   const invoiceId = Number((await params).filename);
   if (!Number.isInteger(invoiceId) || invoiceId <= 0)
     return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+  if (!await ownsInvoice(acc, invoiceId))
+    return NextResponse.json({ error: 'Facture introuvable' }, { status: 404 });
 
   let status: unknown;
   try {

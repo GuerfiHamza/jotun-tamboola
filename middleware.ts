@@ -36,7 +36,7 @@ async function verifyJwtHS256(token: string, secret: string): Promise<boolean> {
 
     const payload = JSON.parse(new TextDecoder().decode(b64urlToBytes(parts[1])));
     if (typeof payload.exp !== 'number' || payload.exp * 1000 < Date.now()) return false;
-    if (payload.role !== 'admin') return false;
+    if (payload.role !== 'master' && payload.role !== 'store') return false;
     return true;
   } catch {
     return false;

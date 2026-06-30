@@ -3,6 +3,7 @@ import { db } from '@/lib/db/index';
 import { participants, invoices } from '@/lib/db/schema';
 import { eq, desc, and, inArray } from 'drizzle-orm';
 import { getAdminFromRequest } from '@/lib/adminAuth';
+import { ownsParticipant, participantScope } from '@/lib/scope';
 import { checkCsrf } from '@/lib/csrf';
 
 type Status = 'pending' | 'approved' | 'rejected';
@@ -16,11 +17,15 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!await getAdminFromRequest())
+  const acc = await getAdminFromRequest();
+  if (!acc)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const id = parseId((await params).id);
   if (!id) return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+
+  if (!await ownsParticipant(acc, id))
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
   const participant = await db.query.participants.findFirst({
     where: eq(participants.id, id),
@@ -28,11 +33,13 @@ export async function GET(
   if (!participant) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
   // Same phone can have several registrations; group all their invoices here
-  // so the admin sees every submission for that phone in one place.
+  // so the admin sees every submission for that phone in one place. Scoped to
+  // this account so a store never sees another store's same-phone submissions.
+  const scope = participantScope(acc);
   const submissions = await db
     .select({ id: participants.id, status: participants.status, created_at: participants.created_at, wilaya: participants.wilaya })
     .from(participants)
-    .where(eq(participants.phone, participant.phone))
+    .where(scope ? and(eq(participants.phone, participant.phone), scope) : eq(participants.phone, participant.phone))
     .orderBy(desc(participants.created_at));
 
   const submissionIds = submissions.map(s => s.id);
@@ -50,7 +57,8 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!await getAdminFromRequest())
+  const acc = await getAdminFromRequest();
+  if (!acc)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   // BUG FIX: was `if (!checkCsrf(req))` — checkCsrf returns null on SUCCESS,
@@ -60,6 +68,9 @@ export async function PATCH(
 
   const id = parseId((await params).id);
   if (!id) return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+
+  if (!await ownsParticipant(acc, id))
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
   let body: { status?: unknown };
   try {
@@ -88,5 +99,29 @@ export async function PATCH(
       .where(eq(invoices.participant_id, id));
   }
 
+  return NextResponse.json({ success: true });
+}
+
+// DELETE a single submission (its invoices cascade). Stores may delete only
+// their own; master may delete any. ponytail: invoice files on disk are left
+// behind — add a sweeper if upload storage ever matters.
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const acc = await getAdminFromRequest();
+  if (!acc)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const csrfError = checkCsrf(req);
+  if (csrfError) return csrfError;
+
+  const id = parseId((await params).id);
+  if (!id) return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+
+  if (!await ownsParticipant(acc, id))
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+  await db.delete(participants).where(eq(participants.id, id));
   return NextResponse.json({ success: true });
 }

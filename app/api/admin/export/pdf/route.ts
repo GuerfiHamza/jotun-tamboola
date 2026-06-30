@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminFromRequest } from '@/lib/adminAuth';
+import { participantScope } from '@/lib/scope';
 import { getExportRows, EXPORT_HEADER } from '@/lib/exportData';
 import PDFDocument from 'pdfkit';
 
@@ -9,11 +10,12 @@ import PDFDocument from 'pdfkit';
 const pdfSafe = (s: string) => s.replace(/[\u00A0\u202F\u2009]/g, ' ');
 
 export async function GET(req: NextRequest) {
-  if (!await getAdminFromRequest())
+  const acc = await getAdminFromRequest();
+  if (!acc)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
-  const rows = await getExportRows(searchParams.get('search') || '', searchParams.get('status') || '');
+  const rows = await getExportRows(searchParams.get('search') || '', searchParams.get('status') || '', participantScope(acc));
 
   const COLS = [30, 130, 75, 80, 42, 55, 45, 80, 95]; // widths, landscape A4 ≈ 770pt usable
   const X0 = 30;

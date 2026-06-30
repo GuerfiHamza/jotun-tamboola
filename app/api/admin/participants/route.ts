@@ -3,9 +3,11 @@ import { db } from '@/lib/db/index';
 import { participants, invoices } from '@/lib/db/schema';
 import { eq, like, or, count, max, desc, and, sql, inArray, SQL } from 'drizzle-orm';
 import { getAdminFromRequest } from '@/lib/adminAuth';
+import { participantScope } from '@/lib/scope';
 
 export async function GET(req: NextRequest) {
-  if (!await getAdminFromRequest())
+  const acc = await getAdminFromRequest();
+  if (!acc)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
@@ -16,6 +18,8 @@ export async function GET(req: NextRequest) {
   const offset       = (page - 1) * limit;
 
   const conditions: SQL[] = [];
+  const scope = participantScope(acc);
+  if (scope) conditions.push(scope);
   if (search) {
     // Escape LIKE wildcards so user input is matched literally
     const safe = search.slice(0, 100).replace(/[\\%_]/g, m => `\\${m}`);
@@ -66,7 +70,7 @@ export async function GET(req: NextRequest) {
     const reps = await db
       .select()
       .from(participants)
-      .where(inArray(participants.phone, phones))
+      .where(scope ? and(inArray(participants.phone, phones), scope) : inArray(participants.phone, phones))
       .orderBy(desc(participants.created_at));
     for (const r of reps) {
       if (!latestByPhone.has(r.phone)) latestByPhone.set(r.phone, r);

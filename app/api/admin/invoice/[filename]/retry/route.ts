@@ -3,6 +3,7 @@ import { db } from '@/lib/db/index';
 import { invoices } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { getAdminFromRequest } from '@/lib/adminAuth';
+import { ownsInvoice } from '@/lib/scope';
 import { checkCsrf } from '@/lib/csrf';
 import { reanalyzeOne } from '@/lib/reanalyze';
 
@@ -11,7 +12,8 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ filename: string }> }
 ) {
-  if (!await getAdminFromRequest())
+  const acc = await getAdminFromRequest();
+  if (!acc)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const csrfError = checkCsrf(req);
   if (csrfError) return csrfError;
@@ -19,6 +21,8 @@ export async function POST(
   const invoiceId = Number((await params).filename);
   if (!Number.isInteger(invoiceId) || invoiceId <= 0)
     return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+  if (!await ownsInvoice(acc, invoiceId))
+    return NextResponse.json({ error: 'Facture introuvable' }, { status: 404 });
 
   const [inv] = await db.select().from(invoices).where(eq(invoices.id, invoiceId)).limit(1);
   if (!inv) return NextResponse.json({ error: 'Facture introuvable' }, { status: 404 });
