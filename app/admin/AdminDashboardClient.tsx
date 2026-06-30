@@ -1,18 +1,208 @@
 'use client';
-import { Fragment, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import type { Locale } from '@/lib/i18n/locale';
 import type { Dictionary } from '@/lib/i18n/dictionaries';
 import { getTheme, ThemeToggle, ADMIN_THEME_KEY, type Theme } from '@/lib/adminTheme';
-import { SubmissionsList, type Submission } from './SubmissionsList';
+
+type ParticipantStatus = 'pending' | 'approved' | 'rejected';
+type InvoiceStatus     = 'pending' | 'accepted' | 'rejected';
 
 type ParticipantStats = { total: number; painters: number; approved: number; pending: number; rejected: number };
 type InvoiceStats     = { total: number; accepted: number; avg_amount: string | null; needs_attention: number };
 type Stats            = { participants: ParticipantStats; invoices: InvoiceStats };
 
-type Store = { id: number; store_name: string; phone: string; submission_count: number };
+type Participant = {
+  needs_attention?: number;
+  id: number; full_name: string; phone: string; wilaya: string;
+  is_painter: number; status: ParticipantStatus; created_at: string;
+  invoice_count: number; best_invoice: number | null;
+  accepted_count?: number; rejected_count?: number;
+  total_amount?: string | null;
+  submission_count?: number;
+};
+
+type Invoice = {
+  id: number; participant_id: number; filename: string; original_name: string;
+  amount_detected: string | null; status: InvoiceStatus; uploaded_at: string;
+  duplicate_flag?: number;
+};
+
+type Submission = { id: number; status: ParticipantStatus; created_at: string; wilaya: string };
+
+
+// ── Status badge ──────────────────────────────────────────────────────────────
+
+function StatusBadge({ s, dict }: { s: ParticipantStatus | InvoiceStatus; dict: Dictionary }) {
+  const labels = dict.admin.dashboard.statusBadge;
+  const cfg: Record<string, { bg: string; color: string; label: string }> = {
+    pending:  { bg: 'rgba(234,179,8,0.12)',  color: '#fbbf24', label: labels.pending },
+    approved: { bg: 'rgba(16,185,129,0.12)', color: '#34d399', label: labels.approved },
+    rejected: { bg: 'rgba(248,113,113,0.15)',  color: '#ef4444', label: labels.rejected },
+    accepted: { bg: 'rgba(16,185,129,0.12)', color: '#34d399', label: labels.accepted },
+  };
+  const c = cfg[s] ?? { bg: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)', label: s };
+  return (
+    <span
+      className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
+      style={{ background: c.bg, color: c.color }}
+    >
+      {c.label}
+    </span>
+  );
+}
+
+// ── Invoice card ──────────────────────────────────────────────────────────────
+
+function InvoiceCard({
+  inv, onAmountUpdate, onStatusChange, dict, th,
+}: {
+  inv: Invoice;
+  onAmountUpdate: (id: number, amount: number) => void;
+  onStatusChange: (id: number, status: 'accepted' | 'rejected') => void;
+  dict: Dictionary;
+  th: Theme;
+}) {
+  const t = dict.admin.dashboard.invoiceCard;
+  const [editing,     setEditing]     = useState(false);
+  const [amountInput, setAmountInput] = useState(inv.amount_detected ?? '');
+  const [saving,      setSaving]      = useState(false);
+  const [error,       setError]       = useState('');
+  const [retrying,    setRetrying]    = useState(false);
+  const [retryMsg,    setRetryMsg]    = useState('');
+
+  async function retryAnalysis() {
+    setRetrying(true); setRetryMsg('');
+    try {
+      const res  = await fetch(`/api/admin/invoice/${inv.id}/retry`, { method: 'POST', headers: { 'x-requested-with': 'XMLHttpRequest' } });
+      const data = await res.json() as { message?: string; error?: string };
+      setRetryMsg(res.ok ? (data.message ?? t.retryDefaultMessage) : (data.error ?? t.retryErrorFallback));
+    } catch { setRetryMsg(t.retryNetworkError); }
+    finally  { setRetrying(false); }
+  }
+
+  async function saveAmount() {
+    const val = parseFloat(amountInput);
+    if (isNaN(val) || val < 0) { setError(t.invalidAmount); return; }
+    setSaving(true); setError('');
+    try {
+      const res = await fetch(`/api/admin/invoice/${inv.id}/amount`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-requested-with': 'XMLHttpRequest' },
+        body: JSON.stringify({ amount: val }),
+      });
+      if (!res.ok) { setError(t.saveErrorFallback); return; }
+      onAmountUpdate(inv.id, val);
+      setEditing(false);
+    } finally { setSaving(false); }
+  }
+
+  const amountOk = Number(inv.amount_detected) >= 20000;
+
+  return (
+    <div
+      className="rounded-xl p-3.5 text-xs space-y-2"
+      style={{ background: th.cardBg, border: `1px solid ${th.border}` }}
+    >
+      <div className="flex justify-between items-center gap-2">
+        <span className="font-medium truncate max-w-32" style={{ color: th.sub }}>{inv.original_name}</span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {inv.duplicate_flag === 1 && (
+            <span
+              title={t.duplicateTooltip}
+              className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+              style={{ background: 'rgba(249,115,22,0.18)', color: '#fdba74' }}
+            >
+              {t.duplicateBadge}
+            </span>
+          )}
+          <StatusBadge s={inv.status} dict={dict} />
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        {inv.status !== 'accepted' && (
+          <button onClick={() => onStatusChange(inv.id, 'accepted')}
+            className="text-[11px] font-bold px-2 py-1 rounded-lg transition-colors active:scale-95"
+            style={{ background: 'rgba(16,185,129,0.12)', color: '#34d399', border: '1px solid rgba(16,185,129,0.35)' }}>
+            ✓ {t.accept}
+          </button>
+        )}
+        {inv.status !== 'rejected' && (
+          <button onClick={() => onStatusChange(inv.id, 'rejected')}
+            className="text-[11px] font-bold px-2 py-1 rounded-lg transition-colors active:scale-95"
+            style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.35)' }}>
+            ✗ {t.rejectInvoice}
+          </button>
+        )}
+      </div>
+
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span style={{ color: th.muted }}>{t.amount}</span>
+        {editing ? (
+          <div className="flex items-center gap-1">
+            <input
+              type="number" value={amountInput}
+              onChange={e => setAmountInput(e.target.value)}
+              autoFocus
+              className="rounded px-1.5 py-0.5 text-xs w-20 outline-none"
+              style={{ background: th.input, border: '1px solid rgba(239,68,68,0.4)', color: th.text }}
+            />
+            <span style={{ color: th.muted }}>DA</span>
+            <button onClick={saveAmount} disabled={saving}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white px-1.5 py-0.5 rounded text-xs font-semibold disabled:opacity-40 transition-colors">
+              {saving ? '…' : '✓'}
+            </button>
+            <button onClick={() => { setEditing(false); setAmountInput(inv.amount_detected ?? ''); setError(''); }}
+              className="rounded px-1.5 py-0.5 text-xs transition-colors"
+              style={{ background: th.input, color: th.muted }}>
+              ✗
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <span className={`font-bold ${amountOk ? 'text-emerald-400' : 'text-red-400'}`}>
+              {inv.amount_detected ? `${Number(inv.amount_detected).toLocaleString('fr-DZ')} DA` : t.notDetected}
+            </span>
+            <button onClick={() => setEditing(true)}
+              className="hover:text-amber-400 transition-colors" style={{ color: th.faint }} title={t.edit}>
+              <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11.013 2.513a1.75 1.75 0 012.475 2.474L5.361 13.115l-3 .638.638-3z"/>
+              </svg>
+            </button>
+          </div>
+        )}
+        {error && <span className="text-red-400 w-full">{error}</span>}
+      </div>
+
+      <div style={{ color: th.faint }}>{new Date(inv.uploaded_at).toLocaleString('fr-DZ')}</div>
+
+      {inv.status !== 'accepted' && (
+        <div className="flex items-center gap-2">
+          <button onClick={retryAnalysis} disabled={retrying}
+            className="text-[11px] font-semibold px-2 py-1 rounded-lg transition-colors disabled:opacity-40"
+            style={{ background: 'rgba(59,130,246,0.12)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.2)' }}>
+            {retrying ? t.retrying : t.retry}
+          </button>
+          {retryMsg && <span className="text-[11px] text-blue-400">{retryMsg}</span>}
+        </div>
+      )}
+
+      <a
+        href={`/api/admin/invoice/${inv.filename}`}
+        target="_blank"
+        className="inline-flex items-center gap-1 text-red-400 hover:text-red-300 transition-colors font-semibold"
+      >
+        {t.viewFile}
+        <svg viewBox="0 0 16 16" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 8h10M9 4l4 4-4 4"/>
+        </svg>
+      </a>
+    </div>
+  );
+}
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
 
@@ -148,20 +338,26 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
   const router = useRouter();
   const t = dict.admin.dashboard;
   const [stats,        setStats]        = useState<Stats | null>(null);
-  const [stores,       setStores]       = useState<Store[] | null>(null);
-  const [fetchError,   setFetchError]   = useState('');
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [total,        setTotal]        = useState(0);
+  const [page,         setPage]         = useState(1);
+  const [pages,        setPages]        = useState(1);
+  const [search,       setSearch]       = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [selected,     setSelected]     = useState<Participant | null>(null);
   const [exportFormat, setExportFormat] = useState<'csv' | 'xlsx' | 'pdf' | null>(null);
-  const [expanded,     setExpanded]     = useState<number | null>(null);
-  const [subs,         setSubs]         = useState<Record<number, Submission[]>>({});
-  const [subLoading,   setSubLoading]   = useState<number | null>(null);
-  const [statusBusy,   setStatusBusy]   = useState<number | null>(null);
-  const [dark,         setDark]         = useState(false); // light default, matches server render; synced from localStorage below
-  const [menuOpen,     setMenuOpen]     = useState(false);
+  const [invoices,     setInvoices]     = useState<Invoice[]>([]);
+  const [submissions,  setSubmissions]  = useState<Submission[]>([]);
+  const [loadingList,  setLoadingList]  = useState(false);
+  const [fetchError,   setFetchError]   = useState('');
+  const [dark, setDark] = useState(false); // light default, matches server render; synced from localStorage below
+  const [menuOpen, setMenuOpen] = useState(false);
   const th = getTheme(dark);
 
   useEffect(() => {
     // ponytail: one-time sync from localStorage on mount to avoid SSR/client
-    // hydration mismatch (server has no access to it).
+    // hydration mismatch (server has no access to it); the lint rule's
+    // "no setState in effect" guidance doesn't apply to this external-system read.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDark(localStorage.getItem(ADMIN_THEME_KEY) === 'dark');
   }, []);
@@ -179,50 +375,69 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
     } catch { setFetchError(t.statsError); }
   }, [router, t.statsError]);
 
-  const fetchStores = useCallback(async () => {
-    setFetchError('');
+  const fetchParticipants = useCallback(async (p = 1) => {
+    setLoadingList(true); setFetchError('');
     try {
-      const res = await fetch('/api/admin/accounts');
+      const params = new URLSearchParams({ page: String(p), search, status: statusFilter });
+      const res = await fetch(`/api/admin/participants?${params}`);
       if (res.status === 401) { router.push('/admin/login'); return; }
       if (!res.ok) throw new Error();
-      const data = await res.json() as { accounts: (Store & { role: string })[] };
-      setStores(data.accounts.filter(a => a.role === 'store'));
+      const data = await res.json() as { participants: Participant[]; total: number; pages: number };
+      setParticipants(data.participants);
+      setTotal(data.total);
+      setPages(data.pages);
+      setPage(p);
     } catch { setFetchError(t.listError); }
-  }, [router, t.listError]);
+    finally  { setLoadingList(false); }
+  }, [router, search, statusFilter, t.listError]);
 
-  async function toggleStore(id: number) {
-    if (expanded === id) { setExpanded(null); return; }
-    setExpanded(id);
-    if (subs[id]) return; // already loaded
-    setSubLoading(id);
+  async function openParticipant(id: number) {
     try {
-      const res = await fetch(`/api/admin/accounts/${id}/submissions`);
+      const res  = await fetch(`/api/admin/participants/${id}`);
       if (!res.ok) throw new Error();
-      const data = await res.json() as { submissions: Submission[] };
-      setSubs(prev => ({ ...prev, [id]: data.submissions }));
-    } catch {
-      setSubs(prev => ({ ...prev, [id]: [] }));
-    } finally { setSubLoading(null); }
+      const data = await res.json() as { participant: Participant; invoices: Invoice[]; submissions: Submission[] };
+      setSelected(data.participant);
+      setInvoices(data.invoices);
+      setSubmissions(data.submissions);
+    } catch { setFetchError(t.participantError); }
   }
 
-  // Accept / refuse a submission directly from the store dropdown.
-  async function setSubmissionStatus(storeId: number, id: number, status: 'approved' | 'rejected') {
-    setStatusBusy(id);
-    try {
-      const res = await fetch(`/api/admin/participants/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-requested-with': 'XMLHttpRequest' },
-        body: JSON.stringify({ status }),
-      });
-      if (!res.ok) throw new Error();
-      setSubs(prev => ({ ...prev, [storeId]: (prev[storeId] ?? []).map(s => s.id === id ? { ...s, status } : s) }));
-      void fetchStats();
-    } catch { setFetchError('Erreur lors de la mise à jour de la soumission.'); }
-    finally { setStatusBusy(null); }
+  async function updateStatus(id: number, status: ParticipantStatus) {
+    await fetch(`/api/admin/participants/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'x-requested-with': 'XMLHttpRequest' },
+      body: JSON.stringify({ status }),
+    });
+    fetchParticipants(page);
+    fetchStats();
+    if (selected) openParticipant(selected.id);
+  }
+
+  async function deleteSubmission(id: number) {
+    // ponytail: literal string instead of a dict key in two locale files.
+    if (!confirm('Supprimer cette soumission et ses factures ? Action irréversible.')) return;
+    await fetch(`/api/admin/participants/${id}`, {
+      method: 'DELETE',
+      headers: { 'x-requested-with': 'XMLHttpRequest' },
+    });
+    setSelected(null);
+    fetchParticipants(page);
+    fetchStats();
+  }
+
+  async function setInvoiceStatus(id: number, status: 'accepted' | 'rejected') {
+    await fetch(`/api/admin/invoice/${id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'x-requested-with': 'XMLHttpRequest' },
+      body: JSON.stringify({ status }),
+    });
+    fetchParticipants(page);
+    fetchStats();
+    if (selected) openParticipant(selected.id);
   }
 
   function runExport(format: 'csv' | 'xlsx' | 'pdf', status: string) {
-    const params = new URLSearchParams({ status });
+    const params = new URLSearchParams({ search, status });
     const path = format === 'csv' ? '/api/admin/export' : `/api/admin/export/${format}`;
     window.location.assign(`${path}?${params}`);
     setExportFormat(null);
@@ -238,10 +453,10 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
     void (async () => {
       if (cancelled) return;
       await fetchStats();
-      await fetchStores();
+      await fetchParticipants(1);
     })();
     return () => { cancelled = true; };
-  }, [fetchStats, fetchStores]);
+  }, [fetchStats, fetchParticipants]);
 
   const statCards = stats ? [
     { label: t.stats.total,             value: stats.participants.total,             color: '#ef4444', icon: <svg viewBox="0 0 20 20" className="w-4 h-4" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg> },
@@ -264,7 +479,7 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
         onLogout={logout}
       />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
         {/* Error banner */}
         {fetchError && (
@@ -274,7 +489,7 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
             >
             <span>{fetchError}</span>
             <button
-              onClick={() => { setFetchError(''); fetchStats(); fetchStores(); }}
+              onClick={() => { setFetchError(''); fetchStats(); fetchParticipants(page); }}
               className="font-semibold underline hover:no-underline ms-4"
             >
               {t.retry}
@@ -298,56 +513,307 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
           </div>
         )}
 
-        {/* Stores table — each row expands to that store's submissions */}
-        <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${th.border}` }}>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[480px]">
-              <thead>
-                <tr style={{ background: th.panelAlt, borderBottom: `1px solid ${th.border}` }}>
-                  {['Magasin', 'Téléphone', 'Soumissions'].map(h => (
-                    <th key={h} className="text-start px-4 py-3.5 text-xs font-bold uppercase tracking-wide" style={{ color: th.muted }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {!stores ? (
-                  <tr><td colSpan={3} className="text-center py-16" style={{ color: th.faint }}>
-                    <svg className="w-5 h-5 animate-spin mx-auto mb-2" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                    </svg>
-                    {t.table.loading}
-                  </td></tr>
-                ) : stores.length === 0 ? (
-                  <tr><td colSpan={3} className="text-center py-16" style={{ color: th.faint }}>Aucun magasin.</td></tr>
-                ) : stores.map(s => (
-                  <Fragment key={s.id}>
-                    <tr onClick={() => toggleStore(s.id)} className="cursor-pointer transition-colors"
-                      style={{ borderBottom: `1px solid ${th.borderSub}`, background: expanded === s.id ? th.rowHover : 'transparent' }}>
+        {/* Search + filter bar */}
+        <div
+          className="rounded-2xl px-5 py-4 mb-5 flex flex-wrap gap-3 items-center"
+          style={{ background: th.panel, border: `1px solid ${th.border}` }}
+        >
+          <div className="relative flex-1 min-w-48">
+            <svg viewBox="0 0 20 20" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: th.faint }} fill="currentColor">
+              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
+            </svg>
+            <input
+              type="text"
+              placeholder={t.filters.searchPlaceholder}
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && fetchParticipants(1)}
+              className="w-full rounded-xl ps-9 pe-3 py-2.5 text-sm outline-none transition-all"
+              style={{ background: th.input, border: `1px solid ${th.border}`, color: th.text }}
+              onFocus={e => { e.currentTarget.style.border = '1px solid rgba(13,42,148,0.4)'; }}
+              onBlur={e =>  { e.currentTarget.style.border = `1px solid ${th.border}`; }}
+            />
+          </div>
+
+          <select
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value)}
+            className="rounded-xl px-3 py-2.5 text-sm outline-none appearance-none transition-all"
+            style={{ background: th.input, border: `1px solid ${th.border}`, color: th.text, colorScheme: dark ? 'dark' : 'light', minWidth: '140px' }}
+            onFocus={e => { e.currentTarget.style.border = '1px solid rgba(13,42,148,0.4)'; }}
+            onBlur={e =>  { e.currentTarget.style.border = `1px solid ${th.border}`; }}
+          >
+            <option value=""         style={{ background: th.selectBg }}>{t.filters.allStatuses}</option>
+            <option value="pending"  style={{ background: th.selectBg }}>{t.filters.pending}</option>
+            <option value="approved" style={{ background: th.selectBg }}>{t.filters.approved}</option>
+            <option value="rejected" style={{ background: th.selectBg }}>{t.filters.rejected}</option>
+          </select>
+
+          <button
+            onClick={() => fetchParticipants(1)}
+            className="font-semibold text-sm text-white px-5 py-2.5 rounded-xl transition-all active:scale-95"
+            style={{ background: 'linear-gradient(135deg,#0d2a94,#072060)', boxShadow: '0 0 16px rgba(13,42,148,0.3)' }}
+          >
+            {t.filters.submit}
+          </button>
+
+          <span className="text-xs ms-auto" style={{ color: th.muted }}>{total} {t.filters.results}</span>
+        </div>
+
+        {/* Main layout */}
+        <div className="flex gap-5 items-start">
+
+          {/* Table */}
+          <div className="flex-1 min-w-0 rounded-2xl overflow-hidden" style={{ border: `1px solid ${th.border}` }}>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ background: th.panelAlt, borderBottom: `1px solid ${th.border}` }}>
+                    {[t.table.headers.name, t.table.headers.phone, t.table.headers.wilaya, t.table.headers.painter, t.table.headers.status, t.table.headers.invoices, t.table.headers.date, t.table.headers.actions].map(h => (
+                      <th key={h} className="text-start px-4 py-3.5 text-xs font-bold uppercase tracking-wide" style={{ color: th.muted }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {loadingList ? (
+                    <tr><td colSpan={8} className="text-center py-16" style={{ color: th.faint }}>
+                      <svg className="w-5 h-5 animate-spin mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                      </svg>
+                      {t.table.loading}
+                    </td></tr>
+                  ) : participants.length === 0 ? (
+                    <tr><td colSpan={8} className="text-center py-16" style={{ color: th.faint }}>{t.table.empty}</td></tr>
+                  ) : participants.map(p => (
+                    <tr
+                      key={p.id}
+                      onClick={() => openParticipant(p.id)}
+                      className="cursor-pointer transition-colors"
+                      style={{
+                        borderBottom: `1px solid ${th.borderSub}`,
+                        background: selected?.id === p.id ? 'rgba(239,68,68,0.06)' : 'transparent',
+                      }}
+                      onMouseEnter={e => { if (selected?.id !== p.id) (e.currentTarget as HTMLElement).style.background = th.rowHover; }}
+                      onMouseLeave={e => { if (selected?.id !== p.id) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                    >
                       <td className="px-4 py-3.5 font-medium" style={{ color: th.text }}>
-                        <span className="inline-block w-3 me-1.5 transition-transform" style={{ color: th.faint, transform: expanded === s.id ? 'rotate(90deg)' : 'none' }}>▸</span>
-                        {s.store_name}
+                        {p.full_name}
+                        {(p.needs_attention ?? 0) > 0 && (
+                          <span
+                            className="ms-2 inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full align-middle"
+                            style={{ background: 'rgba(251,146,60,0.15)', color: '#fb923c' }}
+                            title={t.table.verifyTitle}
+                          >
+                            {t.table.verifyBadge}
+                          </span>
+                        )}
                       </td>
-                      <td className="px-4 py-3.5" style={{ color: th.sub }}>{s.phone}</td>
+                      <td className="px-4 py-3.5" style={{ color: th.sub }}>
+                        {p.phone}
+                        {(p.submission_count ?? 1) > 1 && (
+                          <span
+                            title={t.table.phoneResubmittedTooltip}
+                            className="ms-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold align-middle"
+                            style={{ background: 'rgba(59,130,246,0.2)', color: '#93c5fd' }}
+                          >
+                            {t.table.phoneResubmittedBadge} {p.submission_count}× ▾
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5" style={{ color: th.sub }}>{p.wilaya}</td>
+                      <td className="px-4 py-3.5 text-center">
+                        {p.is_painter ? (
+                          <span className="inline-flex items-center justify-center w-5 h-5 rounded-md" style={{ background: 'rgba(16,185,129,0.15)', color: '#34d399' }}>
+✓                          </span>
+                        ) : (
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-md" style={{ background: 'rgba(248,113,113,0.15)', color: '#ef4444' }}>
+✗                         </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5"><StatusBadge s={p.status} dict={dict} /></td>
                       <td className="px-4 py-3.5">
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold tabular-nums" style={{ background: 'rgba(59,130,246,0.12)', color: '#60a5fa' }}>
-                          {s.submission_count}
-                        </span>
+                        <span className="font-bold tabular-nums" style={{ color: th.sub }}>{p.invoice_count} -</span>
+                        <span className="ms-1.5 text-xs font-semibold text-emerald-400">✓{p.accepted_count ?? 0}</span>
+                        <span className="ms-1.5 text-xs font-semibold text-red-400">✗{p.rejected_count ?? 0}</span>
+                        {Number(p.total_amount) > 0 && (
+                          <span className="ms-2 text-xs font-semibold text-emerald-400">
+                            {Number(p.total_amount).toLocaleString('fr-DZ')} DA
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5 text-xs" style={{ color: th.muted }}>{new Date(p.created_at).toLocaleDateString('fr-DZ')}</td>
+                      <td className="px-4 py-3.5">
+                        <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                          {p.status !== 'approved' && (
+                            <button onClick={() => updateStatus(p.id, 'approved')}
+                              className="text-xs font-bold px-2 py-1 rounded-lg transition-colors"
+                              style={{ background: 'rgba(16,185,129,0.12)', color: '#34d399' }}
+                              title={t.table.approveTitle}>
+                              ✓
+                            </button>
+                          )}
+                          {p.status !== 'rejected' && (
+                            <button onClick={() => updateStatus(p.id, 'rejected')}
+                              className="text-xs font-bold px-2 py-1 rounded-lg transition-colors"
+                              style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171' }}
+                              title={t.table.rejectTitle}>
+                              ✗
+                            </button>
+                          )}
+                          {p.status !== 'pending' && (
+                            <button onClick={() => updateStatus(p.id, 'pending')}
+                              className="text-xs font-bold px-2 py-1 rounded-lg transition-colors"
+                              style={{ background: 'rgba(234,179,8,0.12)', color: '#fbbf24' }}
+                              title={t.table.pendingTitle}>
+                              ?
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
-                    {expanded === s.id && (
-                      <tr>
-                        <td colSpan={3} className="px-4 pb-4 pt-1" style={{ background: th.panelAlt }}>
-                          <SubmissionsList rows={subs[s.id]} loading={subLoading === s.id} th={th}
-                            onStatusChange={(pid, status) => setSubmissionStatus(s.id, pid, status)} busyId={statusBusy} />
-                        </td>
-                      </tr>
-                    )}
-                  </Fragment>
-                ))}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {pages > 1 && (
+              <div
+                className="flex items-center justify-center gap-3 p-4"
+                style={{ borderTop: `1px solid ${th.borderSub}` }}
+              >
+                <button
+                  onClick={() => fetchParticipants(page - 1)} disabled={page === 1}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-colors disabled:opacity-30"
+                  style={{ background: th.input, color: th.sub }}
+                >
+                  {locale === 'ar' ? '→' : '←'}
+                </button>
+                <span className="text-sm" style={{ color: th.muted }}>{t.table.page} {page} / {pages}</span>
+                <button
+                  onClick={() => fetchParticipants(page + 1)} disabled={page === pages}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-colors disabled:opacity-30"
+                  style={{ background: th.input, color: th.sub }}
+                >
+                  {locale === 'ar' ? '←' : '→'}
+                </button>
+              </div>
+            )}
           </div>
+
+          {/* Detail panel — bottom-sheet overlay on mobile, sticky sidebar on desktop */}
+          {selected && (
+            <>
+            <div className="fixed inset-0 z-40 lg:hidden" style={{ background: 'rgba(0,0,0,0.5)' }} onClick={() => setSelected(null)} aria-hidden />
+            <div
+              className="fixed inset-x-0 bottom-0 top-16 z-50 rounded-t-2xl p-5 overflow-y-auto lg:static lg:inset-auto lg:z-auto lg:w-80 lg:shrink-0 lg:rounded-2xl lg:h-fit lg:sticky lg:top-20"
+              style={{
+                background: th.panel,
+                border: `1px solid ${th.border}`,
+                maxHeight: 'calc(100vh - 100px)',
+              }}
+            >
+              {/* Top accent */}
+              <div className="absolute top-0 left-0 right-0 h-px rounded-t-2xl" style={{ background: 'linear-gradient(90deg,transparent,rgba(239,68,68,0.5),transparent)' }} aria-hidden />
+
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-bold" style={{ color: th.text }}>{t.detail.title}</h3>
+                <button
+                  onClick={() => setSelected(null)}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center hover:opacity-80 transition-colors"
+                  style={{ background: th.input, color: th.muted }}
+                >
+                  <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <path d="M12 4L4 12M4 4l8 8"/>
+                  </svg>
+                </button>
+              </div>
+
+              {/* Info rows */}
+              <div className="space-y-2.5 text-sm mb-5 pb-5" style={{ borderBottom: `1px solid ${th.border}` }}>
+                {[
+                  { label: t.detail.name,  value: selected.full_name },
+                  { label: t.detail.phone, value: selected.phone     },
+                ].map(row => (
+                  <div key={row.label} className="flex justify-between items-start gap-3">
+                    <span style={{ color: th.muted }}>{row.label}</span>
+                    <span className="font-medium text-end text-xs" style={{ color: th.text }}>{row.value}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between items-center gap-3">
+                  <span style={{ color: th.muted }}>{t.detail.totalAmount}</span>
+                  <span className="font-bold text-end text-xs text-emerald-400">
+                    {invoices.filter(i => i.status === 'accepted').reduce((sum, i) => sum + Number(i.amount_detected ?? 0), 0).toLocaleString('fr-DZ')} DA
+                  </span>
+                </div>
+                <div className="flex justify-between items-center gap-3">
+                  <span style={{ color: th.muted }}>{t.table.phoneResubmittedBadge}</span>
+                  <span className="font-medium text-end text-xs" style={{ color: '#93c5fd' }}>{submissions.length} {t.detail.submissionsCount}</span>
+                </div>
+              </div>
+
+              {/* Each registration for this phone, with its own invoices */}
+              <div className="space-y-4">
+                {submissions.map(sub => {
+                  const subInvoices = invoices.filter(i => i.participant_id === sub.id);
+                  return (
+                    <div key={sub.id} className="pb-4" style={{ borderBottom: `1px solid ${th.borderSub}` }}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs" style={{ color: th.muted }}>
+                          {sub.wilaya} · {new Date(sub.created_at).toLocaleDateString('fr-DZ')}
+                        </span>
+                        <StatusBadge s={sub.status} dict={dict} />
+                      </div>
+                      <div className="flex gap-2 mb-2.5">
+                        <button
+                          onClick={() => updateStatus(sub.id, 'approved')}
+                          className="flex-1 text-xs font-bold py-1.5 rounded-lg transition-all active:scale-95"
+                          style={{ background: 'rgba(16,185,129,0.12)', color: '#34d399', border: '1px solid rgba(16,185,129,0.2)' }}
+                        >
+                          {t.detail.approve}
+                        </button>
+                        <button
+                          onClick={() => updateStatus(sub.id, 'rejected')}
+                          className="flex-1 text-xs font-bold py-1.5 rounded-lg transition-all active:scale-95"
+                          style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' }}
+                        >
+                          {t.detail.reject}
+                        </button>
+                        <button
+                          onClick={() => deleteSubmission(sub.id)}
+                          title="Supprimer"
+                          className="text-xs font-bold px-2.5 py-1.5 rounded-lg transition-all active:scale-95"
+                          style={{ background: th.input, color: th.muted, border: `1px solid ${th.border}` }}
+                        >
+                          🗑
+                        </button>
+                      </div>
+                      {subInvoices.length === 0 ? (
+                        <p className="text-xs" style={{ color: th.faint }}>{t.detail.noInvoices}</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {subInvoices.map(inv => (
+                            <InvoiceCard
+                              key={inv.id}
+                              inv={inv}
+                              dict={dict}
+                              th={th}
+                              onAmountUpdate={(id, newAmount) => {
+                                setInvoices(prev => prev.map(i => i.id === id ? { ...i, amount_detected: String(newAmount) } : i));
+                              }}
+                              onStatusChange={setInvoiceStatus}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            </>
+          )}
         </div>
       </div>
 
