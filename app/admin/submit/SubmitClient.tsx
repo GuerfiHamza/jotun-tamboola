@@ -1,14 +1,17 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import LanguageSwitcher from '../../components/LanguageSwitcher';
 import type { Locale } from '@/lib/i18n/locale';
 import type { Dictionary } from '@/lib/i18n/dictionaries';
-import { getTheme, ADMIN_THEME_KEY } from '@/lib/adminTheme';
+import { getTheme, ThemeToggle, ADMIN_THEME_KEY } from '@/lib/adminTheme';
 
 type Form = { nom: string; prenom: string; phone: string; is_painter: boolean; invoice: File | null };
 const EMPTY: Form = { nom: '', prenom: '', phone: '', is_painter: false, invoice: null };
 
 export default function SubmitClient({ locale, dict, storeName }: { locale: Locale; dict: Dictionary; storeName: string }) {
+  const router = useRouter();
   const t = dict.landing.form; // reuse field labels from the old public form
   const [form, setForm] = useState<Form>(EMPTY);
   const [error, setError] = useState('');
@@ -21,6 +24,13 @@ export default function SubmitClient({ locale, dict, storeName }: { locale: Loca
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setDark(localStorage.getItem(ADMIN_THEME_KEY) === 'dark');
   }, []);
+
+  useEffect(() => { localStorage.setItem(ADMIN_THEME_KEY, dark ? 'dark' : 'light'); }, [dark]);
+
+  async function logout() {
+    await fetch('/api/admin/logout', { method: 'POST', headers: { 'x-requested-with': 'XMLHttpRequest' } });
+    router.push('/admin/login');
+  }
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm(f => ({ ...f, [k]: v }));
 
@@ -58,11 +68,32 @@ export default function SubmitClient({ locale, dict, storeName }: { locale: Loca
     <main className="min-h-screen" style={{ background: th.page, color: th.text }}>
       <header className="sticky top-0 z-40 px-4 sm:px-6 py-3.5 flex items-center gap-3 flex-wrap"
         style={{ background: th.headerBg, backdropFilter: 'blur(20px)', borderBottom: `1px solid ${th.border}` }}>
-        <Link href="/admin" className="text-sm font-semibold" style={{ color: th.muted }}>
-          {locale === 'ar' ? '→' : '←'} Tableau de bord
-        </Link>
-        <h1 className="font-black text-sm" style={{ color: th.text }}>Nouvelle soumission</h1>
-        <span className="ms-auto text-xs font-semibold" style={{ color: th.muted }}>{storeName}</span>
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-white text-xs" style={{ background: 'linear-gradient(135deg,#0d2a94,#072060)' }}>J</div>
+          <h1 className="font-black text-sm" style={{ color: th.text }}>Nouvelle soumission</h1>
+        </div>
+
+        <div className="ms-auto flex items-center gap-2 sm:gap-3">
+          <span className="text-xs font-semibold hidden sm:inline" style={{ color: th.muted }}>{storeName}</span>
+          <ThemeToggle dark={dark} onToggle={() => setDark(d => !d)} dict={dict} />
+          <LanguageSwitcher locale={locale} dark={dark} />
+          <Link href="/admin/change-password" title="Changer le mot de passe"
+            className="flex items-center gap-1.5 text-xs hover:text-blue-400 transition-colors px-3 py-1.5 rounded-lg"
+            style={{ border: `1px solid ${th.border}`, color: th.muted }}>
+            <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 6a3 3 0 10-3 3M8 9v5M6 12h4"/><circle cx="11" cy="6" r="0.5" fill="currentColor"/>
+            </svg>
+            <span className="hidden sm:inline">Mot de passe</span>
+          </Link>
+          <button onClick={logout}
+            className="flex items-center gap-1.5 text-xs hover:text-blue-400 transition-colors px-3 py-1.5 rounded-lg"
+            style={{ border: `1px solid ${th.border}`, color: th.muted }}>
+            <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"/>
+            </svg>
+            <span className="hidden sm:inline">{dict.admin.dashboard.logout}</span>
+          </button>
+        </div>
       </header>
 
       <div className="max-w-lg mx-auto px-4 sm:px-6 py-8">

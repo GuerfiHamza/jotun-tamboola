@@ -14,6 +14,7 @@ export default async function Page() {
   const me = await db.query.accounts.findFirst({ where: eq(accounts.id, acc.accountId) });
   if (!me) redirect('/admin/login');
   if (me.must_change_password) redirect('/admin/change-password');
+  if (me.role === 'store') redirect('/admin/submit'); // stores only file submissions — no dashboard
 
   const locale = await getLocale();
   const dict = await getDictionary(locale);
