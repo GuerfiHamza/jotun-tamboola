@@ -154,6 +154,7 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
   const [expanded,     setExpanded]     = useState<number | null>(null);
   const [subs,         setSubs]         = useState<Record<number, Submission[]>>({});
   const [subLoading,   setSubLoading]   = useState<number | null>(null);
+  const [statusBusy,   setStatusBusy]   = useState<number | null>(null);
   const [dark,         setDark]         = useState(false); // light default, matches server render; synced from localStorage below
   const [menuOpen,     setMenuOpen]     = useState(false);
   const th = getTheme(dark);
@@ -202,6 +203,22 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
     } catch {
       setSubs(prev => ({ ...prev, [id]: [] }));
     } finally { setSubLoading(null); }
+  }
+
+  // Accept / refuse a submission directly from the store dropdown.
+  async function setSubmissionStatus(storeId: number, id: number, status: 'approved' | 'rejected') {
+    setStatusBusy(id);
+    try {
+      const res = await fetch(`/api/admin/participants/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-requested-with': 'XMLHttpRequest' },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error();
+      setSubs(prev => ({ ...prev, [storeId]: (prev[storeId] ?? []).map(s => s.id === id ? { ...s, status } : s) }));
+      void fetchStats();
+    } catch { setFetchError('Erreur lors de la mise à jour de la soumission.'); }
+    finally { setStatusBusy(null); }
   }
 
   function runExport(format: 'csv' | 'xlsx' | 'pdf', status: string) {
@@ -321,7 +338,8 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
                     {expanded === s.id && (
                       <tr>
                         <td colSpan={3} className="px-4 pb-4 pt-1" style={{ background: th.panelAlt }}>
-                          <SubmissionsList rows={subs[s.id]} loading={subLoading === s.id} th={th} />
+                          <SubmissionsList rows={subs[s.id]} loading={subLoading === s.id} th={th}
+                            onStatusChange={(pid, status) => setSubmissionStatus(s.id, pid, status)} busyId={statusBusy} />
                         </td>
                       </tr>
                     )}

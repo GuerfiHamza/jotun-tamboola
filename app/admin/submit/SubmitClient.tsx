@@ -9,6 +9,7 @@ import { getTheme, ThemeToggle, ADMIN_THEME_KEY } from '@/lib/adminTheme';
 
 type Form = { nom: string; prenom: string; phone: string; is_painter: boolean; invoice: File | null };
 const EMPTY: Form = { nom: '', prenom: '', phone: '', is_painter: false, invoice: null };
+const MAX_BYTES = 10 * 1024 * 1024; // keep in sync with the upload route
 
 export default function SubmitClient({ locale, dict, storeName }: { locale: Locale; dict: Dictionary; storeName: string }) {
   const router = useRouter();
@@ -39,6 +40,10 @@ export default function SubmitClient({ locale, dict, storeName }: { locale: Loca
     setError('');
     if (!form.nom.trim() || !form.prenom.trim() || !form.phone.trim()) { setError('Nom, prénom et téléphone sont requis.'); return; }
     if (!form.invoice) { setError('La facture est requise.'); return; }
+    if (form.invoice.size > MAX_BYTES) {
+      setError(`Facture trop volumineuse (${(form.invoice.size / 1024 / 1024).toFixed(1)} Mo). Maximum 10 Mo — compressez l’image ou reprenez la photo.`);
+      return;
+    }
 
     setLoading(true);
     try {
@@ -54,7 +59,10 @@ export default function SubmitClient({ locale, dict, storeName }: { locale: Loca
       fd.append('invoice', form.invoice);
       fd.append('participantId', String(regData.participantId));
       const up = await fetch('/api/upload-invoice', { method: 'POST', headers: { 'x-requested-with': 'XMLHttpRequest' }, body: fd });
-      const upData = await up.json() as { error?: string; message?: string };
+      // A 413 from the platform/proxy returns HTML, not JSON — handle it explicitly
+      // so it isn't swallowed as a generic network error.
+      if (up.status === 413) { setError('Facture trop volumineuse (max 10 Mo). Compressez l’image ou reprenez la photo.'); return; }
+      const upData = await up.json().catch(() => ({})) as { error?: string; message?: string };
       if (!up.ok) { setError(upData.error ?? 'Erreur lors de l’envoi de la facture.'); return; }
 
       setDone(upData.message ?? 'Soumission reçue.');

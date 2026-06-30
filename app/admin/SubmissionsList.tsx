@@ -13,7 +13,10 @@ export const STATUS_COLOR: Record<Submission['status'], { bg: string; color: str
   rejected: { bg: 'rgba(248,113,113,0.15)', color: '#ef4444', label: 'Rejeté' },
 };
 
-export function SubmissionsList({ rows, loading, th }: { rows: Submission[] | undefined; loading: boolean; th: Theme }) {
+export function SubmissionsList({ rows, loading, th, onStatusChange, busyId }: {
+  rows: Submission[] | undefined; loading: boolean; th: Theme;
+  onStatusChange?: (id: number, status: 'approved' | 'rejected') => void; busyId?: number | null;
+}) {
   if (loading || !rows) return <p className="text-xs py-2" style={{ color: th.faint }}>Chargement…</p>;
   if (rows.length === 0) return <p className="text-xs py-2" style={{ color: th.faint }}>Aucune soumission pour ce magasin.</p>;
   return (
@@ -29,6 +32,20 @@ export function SubmissionsList({ rows, loading, th }: { rows: Submission[] | un
             <span style={{ color: th.muted }}>{s.wilaya}</span>
             <span className="px-2 py-0.5 rounded-full font-bold uppercase text-[10px]" style={{ background: st.bg, color: st.color }}>{st.label}</span>
             <span style={{ color: th.muted }}>{s.invoice_count} facture(s) · ✓{s.accepted_count ?? 0}</span>
+            {onStatusChange && (
+              <span className="flex gap-1.5">
+                {s.status !== 'approved' && (
+                  <button disabled={busyId === s.id} onClick={() => onStatusChange(s.id, 'approved')}
+                    className="font-bold px-2 py-0.5 rounded-lg disabled:opacity-40"
+                    style={{ background: 'rgba(16,185,129,0.12)', color: '#34d399', border: '1px solid rgba(16,185,129,0.3)' }}>✓ Accepter</button>
+                )}
+                {s.status !== 'rejected' && (
+                  <button disabled={busyId === s.id} onClick={() => onStatusChange(s.id, 'rejected')}
+                    className="font-bold px-2 py-0.5 rounded-lg disabled:opacity-40"
+                    style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)' }}>✗ Refuser</button>
+                )}
+              </span>
+            )}
             <span className="ms-auto" style={{ color: th.faint }}>{new Date(s.created_at).toLocaleDateString('fr-DZ')}</span>
           </div>
         );
