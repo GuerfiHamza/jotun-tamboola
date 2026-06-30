@@ -366,7 +366,7 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <header
-        className="sticky top-0 z-40 px-6 py-3.5 flex items-center gap-3"
+        className="sticky top-0 z-40 px-4 sm:px-6 py-3.5 flex items-center gap-3 flex-wrap"
         style={{ background: th.headerBg, backdropFilter: 'blur(20px)', borderBottom: `1px solid ${th.border}`, boxShadow: '0 4px 32px rgba(0,0,0,0.4)' }}
       >
         {/* Brand */}
@@ -418,6 +418,17 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
             </button>
           </div>
 
+          <Link href="/admin/change-password"
+            title="Changer le mot de passe"
+            className="flex items-center gap-1.5 text-xs hover:text-blue-400 transition-colors px-3 py-1.5 rounded-lg"
+            style={{ border: `1px solid ${th.border}`, color: th.muted }}>
+            <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 6a3 3 0 10-3 3M8 9v5M6 12h4"/>
+              <circle cx="11" cy="6" r="0.5" fill="currentColor"/>
+            </svg>
+            <span className="hidden sm:inline">Mot de passe</span>
+          </Link>
+
           <button
             onClick={logout}
             className="flex items-center gap-1.5 text-xs hover:text-blue-400 transition-colors px-3 py-1.5 rounded-lg"
@@ -426,12 +437,12 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
             <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"/>
             </svg>
-            {t.logout}
+            <span className="hidden sm:inline">{t.logout}</span>
           </button>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
         {/* Error banner */}
         {fetchError && (
@@ -654,10 +665,12 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
             )}
           </div>
 
-          {/* Detail panel */}
+          {/* Detail panel — bottom-sheet overlay on mobile, sticky sidebar on desktop */}
           {selected && (
+            <>
+            <div className="fixed inset-0 z-40 lg:hidden" style={{ background: 'rgba(0,0,0,0.5)' }} onClick={() => setSelected(null)} aria-hidden />
             <div
-              className="w-80 shrink-0 rounded-2xl p-5 h-fit sticky top-20 overflow-y-auto"
+              className="fixed inset-x-0 bottom-0 top-16 z-50 rounded-t-2xl p-5 overflow-y-auto lg:static lg:inset-auto lg:z-auto lg:w-80 lg:shrink-0 lg:rounded-2xl lg:h-fit lg:sticky lg:top-20"
               style={{
                 background: th.panel,
                 border: `1px solid ${th.border}`,
@@ -762,6 +775,7 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
                 })}
               </div>
             </div>
+            </>
           )}
         </div>
       </div>

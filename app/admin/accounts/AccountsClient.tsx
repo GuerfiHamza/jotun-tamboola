@@ -91,7 +91,7 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
 
   return (
     <main className="min-h-screen" style={{ background: th.page, color: th.text }}>
-      <header className="sticky top-0 z-40 px-6 py-3.5 flex items-center gap-3"
+      <header className="sticky top-0 z-40 px-4 sm:px-6 py-3.5 flex items-center gap-3 flex-wrap"
         style={{ background: th.headerBg, backdropFilter: 'blur(20px)', borderBottom: `1px solid ${th.border}` }}>
         <Link href="/admin" className="text-sm font-semibold" style={{ color: th.muted }}>
           {locale === 'ar' ? '→' : '←'} Tableau de bord
@@ -104,9 +104,10 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
         </button>
       </header>
 
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${th.border}` }}>
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[480px]">
             <thead>
               <tr style={{ background: th.panelAlt, borderBottom: `1px solid ${th.border}` }}>
                 {['Magasin', 'Téléphone', 'Statut', 'Créé le', 'Actions'].map(h => (
@@ -156,6 +157,7 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 

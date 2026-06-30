@@ -56,7 +56,7 @@ export default function SubmitClient({ locale, dict, storeName }: { locale: Loca
 
   return (
     <main className="min-h-screen" style={{ background: th.page, color: th.text }}>
-      <header className="sticky top-0 z-40 px-6 py-3.5 flex items-center gap-3"
+      <header className="sticky top-0 z-40 px-4 sm:px-6 py-3.5 flex items-center gap-3 flex-wrap"
         style={{ background: th.headerBg, backdropFilter: 'blur(20px)', borderBottom: `1px solid ${th.border}` }}>
         <Link href="/admin" className="text-sm font-semibold" style={{ color: th.muted }}>
           {locale === 'ar' ? '→' : '←'} Tableau de bord
@@ -65,7 +65,7 @@ export default function SubmitClient({ locale, dict, storeName }: { locale: Loca
         <span className="ms-auto text-xs font-semibold" style={{ color: th.muted }}>{storeName}</span>
       </header>
 
-      <div className="max-w-lg mx-auto px-6 py-8">
+      <div className="max-w-lg mx-auto px-4 sm:px-6 py-8">
         {done ? (
           <div className="rounded-2xl text-center p-8" style={{ border: '1px solid rgba(16,185,129,0.25)', background: 'rgba(16,185,129,0.05)' }}>
             <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.12)' }}>
