@@ -1,12 +1,19 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { Locale } from '@/lib/i18n/locale';
 import type { Dictionary } from '@/lib/i18n/dictionaries';
 import { getTheme, ADMIN_THEME_KEY, type Theme } from '@/lib/adminTheme';
 
-type Account = { id: number; store_name: string; phone: string; role: 'master' | 'store'; active: number; created_at: string };
+type Account = { id: number; store_name: string; phone: string; role: 'master' | 'store'; active: number; created_at: string; submission_count: number };
+type Submission = { id: number; full_name: string; phone: string; wilaya: string; is_painter: number; status: 'pending' | 'approved' | 'rejected'; created_at: string; invoice_count: number; accepted_count: number };
 type Editing = { id?: number; store_name: string; phone: string; active: boolean } | null;
+
+const STATUS_COLOR: Record<Submission['status'], { bg: string; color: string; label: string }> = {
+  pending:  { bg: 'rgba(234,179,8,0.12)',  color: '#fbbf24', label: 'En attente' },
+  approved: { bg: 'rgba(16,185,129,0.12)', color: '#34d399', label: 'Approuvé' },
+  rejected: { bg: 'rgba(248,113,113,0.15)', color: '#ef4444', label: 'Rejeté' },
+};
 
 const JSON_HEADERS = { 'Content-Type': 'application/json', 'x-requested-with': 'XMLHttpRequest' };
 
@@ -19,8 +26,26 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
   const [saving, setSaving] = useState(false);
   const [reveal, setReveal] = useState<{ store: string; password: string } | null>(null); // generated/reset password to hand over
   const [copied, setCopied] = useState(false);
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const [subs, setSubs] = useState<Record<number, Submission[]>>({});
+  const [subLoading, setSubLoading] = useState<number | null>(null);
   const [dark, setDark] = useState(false);
   const th = getTheme(dark);
+
+  async function toggleSubmissions(id: number) {
+    if (expanded === id) { setExpanded(null); return; }
+    setExpanded(id);
+    if (subs[id]) return; // already loaded
+    setSubLoading(id);
+    try {
+      const res = await fetch(`/api/admin/accounts/${id}/submissions`);
+      if (!res.ok) throw new Error();
+      const data = await res.json() as { submissions: Submission[] };
+      setSubs(prev => ({ ...prev, [id]: data.submissions }));
+    } catch {
+      setSubs(prev => ({ ...prev, [id]: [] }));
+    } finally { setSubLoading(null); }
+  }
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -110,7 +135,7 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
           <table className="w-full text-sm min-w-[480px]">
             <thead>
               <tr style={{ background: th.panelAlt, borderBottom: `1px solid ${th.border}` }}>
-                {['Magasin', 'Téléphone', 'Statut', 'Créé le', 'Actions'].map(h => (
+                {['Magasin', 'Téléphone', 'Soumissions', 'Statut', 'Créé le', 'Actions'].map(h => (
                   <th key={h} className="text-start px-4 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: th.muted }}>{h}</th>
                 ))}
               </tr>
@@ -118,7 +143,7 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
             <tbody>
               {/* 4 states: loading / error / empty / ready */}
               {listState === 'loading' ? (
-                <tr><td colSpan={5} className="text-center py-16" style={{ color: th.faint }}>
+                <tr><td colSpan={6} className="text-center py-16" style={{ color: th.faint }}>
                   <svg className="w-5 h-5 animate-spin mx-auto mb-2" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -126,17 +151,27 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
                   Chargement…
                 </td></tr>
               ) : listState === 'error' ? (
-                <tr><td colSpan={5} className="text-center py-16" style={{ color: '#f87171' }}>
+                <tr><td colSpan={6} className="text-center py-16" style={{ color: '#f87171' }}>
                   {listError} <button onClick={load} className="underline ms-2">Réessayer</button>
                 </td></tr>
               ) : accounts.length === 0 ? (
-                <tr><td colSpan={5} className="text-center py-16" style={{ color: th.faint }}>Aucun compte magasin. Créez-en un.</td></tr>
+                <tr><td colSpan={6} className="text-center py-16" style={{ color: th.faint }}>Aucun compte magasin. Créez-en un.</td></tr>
               ) : accounts.map(a => (
-                <tr key={a.id} style={{ borderBottom: `1px solid ${th.borderSub}` }}>
-                  <td className="px-4 py-3 font-medium" style={{ color: th.text }}>{a.store_name}</td>
+                <Fragment key={a.id}>
+                <tr onClick={() => toggleSubmissions(a.id)} className="cursor-pointer"
+                  style={{ borderBottom: `1px solid ${th.borderSub}`, background: expanded === a.id ? th.rowHover : 'transparent' }}>
+                  <td className="px-4 py-3 font-medium" style={{ color: th.text }}>
+                    <span className="inline-block w-3 me-1.5 transition-transform" style={{ color: th.faint, transform: expanded === a.id ? 'rotate(90deg)' : 'none' }}>▸</span>
+                    {a.store_name}
+                  </td>
                   <td className="px-4 py-3" style={{ color: th.sub }}>{a.phone}</td>
                   <td className="px-4 py-3">
-                    <button onClick={() => toggleActive(a)}
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold tabular-nums" style={{ background: 'rgba(59,130,246,0.12)', color: '#60a5fa' }}>
+                      {a.submission_count}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <button onClick={e => { e.stopPropagation(); toggleActive(a); }}
                       className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase"
                       style={a.active
                         ? { background: 'rgba(16,185,129,0.12)', color: '#34d399' }
@@ -146,7 +181,7 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
                   </td>
                   <td className="px-4 py-3 text-xs" style={{ color: th.muted }}>{new Date(a.created_at).toLocaleDateString('fr-DZ')}</td>
                   <td className="px-4 py-3">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2" onClick={e => e.stopPropagation()}>
                       <button onClick={() => { setError(''); setEditing({ id: a.id, store_name: a.store_name, phone: a.phone, active: !!a.active }); }}
                         className="text-xs font-semibold px-2 py-1 rounded-lg" style={{ background: th.input, color: th.sub }}>Modifier</button>
                       <button onClick={() => remove(a)}
@@ -154,6 +189,14 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
                     </div>
                   </td>
                 </tr>
+                {expanded === a.id && (
+                  <tr>
+                    <td colSpan={6} className="px-4 pb-4 pt-1" style={{ background: th.panelAlt }}>
+                      <Submissions rows={subs[a.id]} loading={subLoading === a.id} th={th} />
+                    </td>
+                  </tr>
+                )}
+                </Fragment>
               ))}
             </tbody>
           </table>
@@ -219,6 +262,30 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
         </div>
       )}
     </main>
+  );
+}
+
+function Submissions({ rows, loading, th }: { rows: Submission[] | undefined; loading: boolean; th: Theme }) {
+  if (loading || !rows) return <p className="text-xs py-2" style={{ color: th.faint }}>Chargement…</p>;
+  if (rows.length === 0) return <p className="text-xs py-2" style={{ color: th.faint }}>Aucune soumission pour ce magasin.</p>;
+  return (
+    <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${th.border}` }}>
+      {rows.map((s, i) => {
+        const st = STATUS_COLOR[s.status];
+        return (
+          <div key={s.id}
+            className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-xs"
+            style={{ borderTop: i === 0 ? 'none' : `1px solid ${th.borderSub}`, background: th.panel }}>
+            <span className="font-semibold" style={{ color: th.text }}>{s.full_name}</span>
+            <span style={{ color: th.sub }}>{s.phone}</span>
+            <span style={{ color: th.muted }}>{s.wilaya}</span>
+            <span className="px-2 py-0.5 rounded-full font-bold uppercase text-[10px]" style={{ background: st.bg, color: st.color }}>{st.label}</span>
+            <span style={{ color: th.muted }}>{s.invoice_count} facture(s) · ✓{s.accepted_count ?? 0}</span>
+            <span className="ms-auto" style={{ color: th.faint }}>{new Date(s.created_at).toLocaleDateString('fr-DZ')}</span>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 

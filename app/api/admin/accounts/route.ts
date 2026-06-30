@@ -1,20 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/index';
-import { accounts } from '@/lib/db/schema';
-import { desc, eq } from 'drizzle-orm';
+import { accounts, participants } from '@/lib/db/schema';
+import { desc, eq, sql } from 'drizzle-orm';
 import { getAdminFromRequest } from '@/lib/adminAuth';
 import { checkCsrf } from '@/lib/csrf';
 import { hashPassword, generateTempPassword } from '@/lib/auth';
 
-// GET: master lists all store accounts. POST: master creates one.
+// GET: master lists all store accounts (with their submission counts). POST: master creates one.
 export async function GET() {
   const acc = await getAdminFromRequest();
   if (!acc || acc.role !== 'master')
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const rows = await db
-    .select({ id: accounts.id, store_name: accounts.store_name, phone: accounts.phone, role: accounts.role, active: accounts.active, created_at: accounts.created_at })
+    .select({
+      id: accounts.id, store_name: accounts.store_name, phone: accounts.phone,
+      role: accounts.role, active: accounts.active, created_at: accounts.created_at,
+      submission_count: sql<number>`COUNT(DISTINCT ${participants.id})`,
+    })
     .from(accounts)
+    .leftJoin(participants, eq(participants.account_id, accounts.id))
+    .groupBy(accounts.id)
     .orderBy(desc(accounts.created_at));
 
   return NextResponse.json({ accounts: rows });
