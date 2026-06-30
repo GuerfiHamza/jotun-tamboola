@@ -83,5 +83,5 @@ CREATE INDEX `idx_invoices_file_hash` ON `invoices` (`file_hash`);
 CREATE INDEX `idx_invoices_content_key` ON `invoices` (`content_key`);
 
 -- Master account seed. Login: MASTER / ChangeMe!2026 — CHANGE THIS PASSWORD.
-INSERT INTO `accounts` (`store_name`, `password`, `role`, `active`, `must_change_password`)
-VALUES ('MASTER', '$2b$12$y.77vj2HDD1CKEjZ7Kryl.JVINd50ruCQJi4ztTdKTqdOl9MZhO1i', 'master', 1, 0);
+INSERT INTO `accounts` (`nom_de_store`, `store_name`, `password`, `role`, `active`, `must_change_password`)
+VALUES ('MASTER', 'MASTER', '$2b$12$y.77vj2HDD1CKEjZ7Kryl.JVINd50ruCQJi4ztTdKTqdOl9MZhO1i', 'master', 1, 0);
