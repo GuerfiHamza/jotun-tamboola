@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import StoresPanel from './StoresPanel';
 import type { Locale } from '@/lib/i18n/locale';
 import type { Dictionary } from '@/lib/i18n/dictionaries';
 import { getTheme, ThemeToggle, ADMIN_THEME_KEY, type Theme } from '@/lib/adminTheme';
@@ -513,6 +514,9 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
             {statCards.map(s => <StatCard key={s.label} {...s} th={th} />)}
           </div>
         )}
+
+        {/* Submissions grouped by store (master only) */}
+        {role === 'master' && <StoresPanel th={th} />}
 
         {/* Search + filter bar */}
         <div
