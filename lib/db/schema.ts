@@ -3,7 +3,7 @@ import { mysqlTable, int, varchar, tinyint, timestamp, decimal, text, mysqlEnum 
 export const accounts = mysqlTable('accounts', {
   id:         int('id').autoincrement().primaryKey(),
   store_name: varchar('store_name', { length: 150 }).notNull().unique(), // doubles as the login username
-  phone:      varchar('phone', { length: 30 }).notNull(),
+  nom_de_store: varchar('nom_de_store', { length: 150 }).notNull().unique(),
   password:   varchar('password', { length: 255 }).notNull(),
   role:       mysqlEnum('role', ['master', 'store']).default('store').notNull(),
   active:     tinyint('active').default(1).notNull(),

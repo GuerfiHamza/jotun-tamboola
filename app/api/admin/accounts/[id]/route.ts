@@ -11,7 +11,7 @@ function parseId(raw: string): number | null {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-// PATCH: master edits a store account (name / phone / password / active).
+// PATCH: master edits a store account (name / password / active).
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const acc = await getAdminFromRequest();
   if (!acc || acc.role !== 'master')
@@ -28,7 +28,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (target.role === 'master')
     return NextResponse.json({ error: 'Le compte maître ne peut pas être modifié ici.' }, { status: 403 });
 
-  let body: { store_name?: unknown; phone?: unknown; regenerate_password?: unknown; active?: unknown };
+  let body: { store_name?: unknown; regenerate_password?: unknown; active?: unknown };
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: 'Corps invalide' }, { status: 400 }); }
 
@@ -41,11 +41,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const dupe = await db.query.accounts.findFirst({ where: and(eq(accounts.store_name, v), ne(accounts.id, id)) });
     if (dupe) return NextResponse.json({ error: 'Un compte avec ce nom existe déjà.' }, { status: 409 });
     set.store_name = v;
-  }
-  if (body.phone !== undefined) {
-    const v = typeof body.phone === 'string' ? body.phone.trim() : '';
-    if (v.length < 6 || v.length > 30) return NextResponse.json({ error: 'Téléphone invalide.' }, { status: 400 });
-    set.phone = v;
   }
   if (body.active !== undefined) set.active = body.active ? 1 : 0;
 

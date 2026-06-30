@@ -14,7 +14,7 @@ export async function GET() {
 
   const rows = await db
     .select({
-      id: accounts.id, store_name: accounts.store_name, phone: accounts.phone,
+      id: accounts.id, store_name: accounts.store_name, nom_de_store: accounts.nom_de_store,
       role: accounts.role, active: accounts.active, created_at: accounts.created_at,
       submission_count: sql<number>`COUNT(DISTINCT ${participants.id})`,
     })
@@ -34,17 +34,14 @@ export async function POST(req: NextRequest) {
   const csrfError = checkCsrf(req);
   if (csrfError) return csrfError;
 
-  let body: { store_name?: unknown; phone?: unknown; active?: unknown };
+  let body: { store_name?: unknown; active?: unknown };
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: 'Corps invalide' }, { status: 400 }); }
 
   const store_name = typeof body.store_name === 'string' ? body.store_name.trim() : '';
-  const phone      = typeof body.phone === 'string' ? body.phone.trim() : '';
 
   if (store_name.length < 2 || store_name.length > 150)
     return NextResponse.json({ error: 'Nom du magasin invalide (2 à 150 caractères).' }, { status: 400 });
-  if (phone.length < 6 || phone.length > 30)
-    return NextResponse.json({ error: 'Numéro de téléphone invalide.' }, { status: 400 });
 
   const dupe = await db.query.accounts.findFirst({ where: eq(accounts.store_name, store_name) });
   if (dupe) return NextResponse.json({ error: 'Un compte avec ce nom existe déjà.' }, { status: 409 });
@@ -55,7 +52,7 @@ export async function POST(req: NextRequest) {
 
   const [inserted] = await db.insert(accounts).values({
     store_name,
-    phone,
+    nom_de_store: store_name, // ponytail: no separate display name in the form; mirror store_name (both unique)
     password: await hashPassword(tempPassword),
     role: 'store',
     active: body.active === false ? 0 : 1,

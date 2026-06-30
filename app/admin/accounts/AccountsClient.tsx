@@ -6,8 +6,8 @@ import type { Dictionary } from '@/lib/i18n/dictionaries';
 import { getTheme, ADMIN_THEME_KEY, type Theme } from '@/lib/adminTheme';
 import { SubmissionsList, type Submission } from '../SubmissionsList';
 
-type Account = { id: number; store_name: string; phone: string; role: 'master' | 'store'; active: number; created_at: string; submission_count: number };
-type Editing = { id?: number; store_name: string; phone: string; active: boolean } | null;
+type Account = { id: number; store_name: string; role: 'master' | 'store'; active: number; created_at: string; submission_count: number };
+type Editing = { id?: number; store_name: string; active: boolean } | null;
 
 const JSON_HEADERS = { 'Content-Type': 'application/json', 'x-requested-with': 'XMLHttpRequest' };
 
@@ -70,7 +70,7 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
       const res = await fetch(url, {
         method: isNew ? 'POST' : 'PATCH',
         headers: JSON_HEADERS,
-        body: JSON.stringify({ store_name: editing.store_name.trim(), phone: editing.phone.trim(), active: editing.active }),
+        body: JSON.stringify({ store_name: editing.store_name.trim(), active: editing.active }),
       });
       const data = await res.json() as { error?: string; password?: string };
       if (!res.ok) { setError(data.error ?? 'Erreur.'); return; }
@@ -116,7 +116,7 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
           {locale === 'ar' ? '→' : '←'} Tableau de bord
         </Link>
         <h1 className="font-black text-sm" style={{ color: th.text }}>Comptes magasins</h1>
-        <button onClick={() => { setError(''); setEditing({ store_name: '', phone: '', active: true }); }}
+        <button onClick={() => { setError(''); setEditing({ store_name: '', active: true }); }}
           className="ms-auto text-xs font-semibold text-white px-4 py-2 rounded-lg active:scale-95"
           style={{ background: 'linear-gradient(135deg,#0d2a94,#072060)' }}>
           + Nouveau compte
@@ -129,7 +129,7 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
           <table className="w-full text-sm min-w-[480px]">
             <thead>
               <tr style={{ background: th.panelAlt, borderBottom: `1px solid ${th.border}` }}>
-                {['Magasin', 'Téléphone', 'Soumissions', 'Statut', 'Créé le', 'Actions'].map(h => (
+                {['Magasin', 'Soumissions', 'Statut', 'Créé le', 'Actions'].map(h => (
                   <th key={h} className="text-start px-4 py-3 text-xs font-bold uppercase tracking-wide" style={{ color: th.muted }}>{h}</th>
                 ))}
               </tr>
@@ -137,7 +137,7 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
             <tbody>
               {/* 4 states: loading / error / empty / ready */}
               {listState === 'loading' ? (
-                <tr><td colSpan={6} className="text-center py-16" style={{ color: th.faint }}>
+                <tr><td colSpan={5} className="text-center py-16" style={{ color: th.faint }}>
                   <svg className="w-5 h-5 animate-spin mx-auto mb-2" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -145,11 +145,11 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
                   Chargement…
                 </td></tr>
               ) : listState === 'error' ? (
-                <tr><td colSpan={6} className="text-center py-16" style={{ color: '#f87171' }}>
+                <tr><td colSpan={5} className="text-center py-16" style={{ color: '#f87171' }}>
                   {listError} <button onClick={load} className="underline ms-2">Réessayer</button>
                 </td></tr>
               ) : accounts.length === 0 ? (
-                <tr><td colSpan={6} className="text-center py-16" style={{ color: th.faint }}>Aucun compte magasin. Créez-en un.</td></tr>
+                <tr><td colSpan={5} className="text-center py-16" style={{ color: th.faint }}>Aucun compte magasin. Créez-en un.</td></tr>
               ) : accounts.map(a => (
                 <Fragment key={a.id}>
                 <tr onClick={() => toggleSubmissions(a.id)} className="cursor-pointer"
@@ -158,7 +158,6 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
                     <span className="inline-block w-3 me-1.5 transition-transform" style={{ color: th.faint, transform: expanded === a.id ? 'rotate(90deg)' : 'none' }}>▸</span>
                     {a.store_name}
                   </td>
-                  <td className="px-4 py-3" style={{ color: th.sub }}>{a.phone}</td>
                   <td className="px-4 py-3">
                     <span className="px-2.5 py-0.5 rounded-full text-xs font-bold tabular-nums" style={{ background: 'rgba(59,130,246,0.12)', color: '#60a5fa' }}>
                       {a.submission_count}
@@ -176,7 +175,7 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
                   <td className="px-4 py-3 text-xs" style={{ color: th.muted }}>{new Date(a.created_at).toLocaleDateString('fr-DZ')}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-                      <button onClick={() => { setError(''); setEditing({ id: a.id, store_name: a.store_name, phone: a.phone, active: !!a.active }); }}
+                      <button onClick={() => { setError(''); setEditing({ id: a.id, store_name: a.store_name, active: !!a.active }); }}
                         className="text-xs font-semibold px-2 py-1 rounded-lg" style={{ background: th.input, color: th.sub }}>Modifier</button>
                       <button onClick={() => remove(a)}
                         className="text-xs font-semibold px-2 py-1 rounded-lg" style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171' }}>Supprimer</button>
@@ -185,7 +184,7 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
                 </tr>
                 {expanded === a.id && (
                   <tr>
-                    <td colSpan={6} className="px-4 pb-4 pt-1" style={{ background: th.panelAlt }}>
+                    <td colSpan={5} className="px-4 pb-4 pt-1" style={{ background: th.panelAlt }}>
                       <SubmissionsList rows={subs[a.id]} loading={subLoading === a.id} th={th} />
                     </td>
                   </tr>
@@ -206,7 +205,6 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
             {error && <div className="mb-3 rounded-lg px-3 py-2 text-xs" style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171' }}>{error}</div>}
             <div className="space-y-3">
               <Field label="Nom du magasin" th={th} value={editing.store_name} onChange={v => setEditing({ ...editing, store_name: v })} />
-              <Field label="Téléphone" th={th} value={editing.phone} onChange={v => setEditing({ ...editing, phone: v })} />
               <label className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl" style={{ border: `1px solid ${th.border}` }}>
                 <span className="text-sm" style={{ color: th.sub }}>Compte actif</span>
                 <input type="checkbox" checked={editing.active} onChange={e => setEditing({ ...editing, active: e.target.checked })} />
