@@ -227,6 +227,111 @@ function StatCard({ label, value, color, icon, th }: { label: string; value: num
   );
 }
 
+// ── Header (responsive: inline on desktop, burger dropdown on mobile) ──────────
+
+function Header({
+  role, storeName, t, th, dark, locale, dict, menuOpen, setMenuOpen, onToggleDark, onExport, onLogout,
+}: {
+  role: 'master' | 'store'; storeName: string; t: Dictionary['admin']['dashboard']; th: Theme; dark: boolean;
+  locale: Locale; dict: Dictionary; menuOpen: boolean; setMenuOpen: (v: boolean) => void;
+  onToggleDark: () => void; onExport: (f: 'csv' | 'xlsx' | 'pdf') => void; onLogout: () => void;
+}) {
+  // Shared action items — rendered inline on desktop and inside the dropdown on mobile.
+  const actions = (
+    <>
+      {role === 'store' ? (
+        <Link href="/admin/submit"
+          className="text-xs font-semibold text-white px-3 py-1.5 rounded-lg transition-all active:scale-95 text-center"
+          style={{ background: 'linear-gradient(135deg,#0d2a94,#072060)' }}>
+          + Nouvelle soumission
+        </Link>
+      ) : (
+        <Link href="/admin/accounts"
+          className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors text-blue-400 hover:text-blue-300 text-center"
+          style={{ border: `1px solid ${th.border}` }}>
+          Comptes magasins
+        </Link>
+      )}
+
+      {/* Export buttons */}
+      <div className="flex rounded-xl overflow-hidden" style={{ border: `1px solid ${th.border}` }}>
+        <button onClick={() => onExport('csv')}
+          className="flex-1 px-3 py-1.5 text-xs font-semibold transition-colors text-emerald-400 hover:text-emerald-300"
+          style={{ background: 'rgba(16,185,129,0.08)' }}>CSV</button>
+        <button onClick={() => onExport('xlsx')}
+          className="flex-1 px-3 py-1.5 text-xs font-semibold transition-colors text-blue-400 hover:text-blue-300"
+          style={{ background: 'rgba(59,130,246,0.08)', borderLeft: '1px solid rgba(255,255,255,0.06)' }}>Excel</button>
+        <button onClick={() => onExport('pdf')}
+          className="flex-1 px-3 py-1.5 text-xs font-semibold transition-colors text-blue-400 hover:text-blue-300"
+          style={{ background: 'rgba(13,42,148,0.08)', borderLeft: '1px solid rgba(255,255,255,0.06)' }}>PDF</button>
+      </div>
+
+      <Link href="/admin/change-password" title="Changer le mot de passe"
+        className="flex items-center justify-center gap-1.5 text-xs hover:text-blue-400 transition-colors px-3 py-1.5 rounded-lg"
+        style={{ border: `1px solid ${th.border}`, color: th.muted }}>
+        <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M11 6a3 3 0 10-3 3M8 9v5M6 12h4"/><circle cx="11" cy="6" r="0.5" fill="currentColor"/>
+        </svg>
+        Mot de passe
+      </Link>
+
+      <button onClick={onLogout}
+        className="flex items-center justify-center gap-1.5 text-xs hover:text-blue-400 transition-colors px-3 py-1.5 rounded-lg"
+        style={{ border: `1px solid ${th.border}`, color: th.muted }}>
+        <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"/>
+        </svg>
+        {t.logout}
+      </button>
+    </>
+  );
+
+  return (
+    <header
+      className="sticky top-0 z-40 px-4 sm:px-6 py-3.5 flex items-center gap-3"
+      style={{ background: th.headerBg, backdropFilter: 'blur(20px)', borderBottom: `1px solid ${th.border}`, boxShadow: '0 4px 32px rgba(0,0,0,0.4)' }}
+    >
+      {/* Brand */}
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-white text-xs shadow" style={{ background: 'linear-gradient(135deg,#0d2a94,#072060)', boxShadow: '0 4px 16px rgba(13,42,148,0.4)' }}>J</div>
+        <div className="leading-none">
+          <div className="font-black text-white text-sm tracking-tight">JOTUN</div>
+          <div className="text-[9px] font-bold text-blue-400 tracking-[0.2em] uppercase">{t.brandSubtitle}</div>
+        </div>
+      </div>
+
+      <div className="ms-auto flex items-center gap-3">
+        <span className="text-xs font-semibold hidden md:inline" style={{ color: th.muted }}>
+          {role === 'master' ? 'Maître' : storeName}
+        </span>
+        <ThemeToggle dark={dark} onToggle={onToggleDark} dict={dict} />
+        <LanguageSwitcher locale={locale} dark={dark} />
+
+        {/* Desktop: inline actions */}
+        <div className="hidden md:flex items-center gap-3">{actions}</div>
+
+        {/* Mobile: burger */}
+        <button onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu" aria-expanded={menuOpen}
+          className="md:hidden w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-all"
+          style={{ background: dark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)', border: `1px solid ${th.border}`, color: th.sub }}>
+          <svg viewBox="0 0 20 20" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            {menuOpen ? <path d="M5 5l10 10M15 5L5 15"/> : <path d="M3 6h14M3 10h14M3 14h14"/>}
+          </svg>
+        </button>
+      </div>
+
+      {/* Mobile: dropdown panel (closes on any item click) */}
+      {menuOpen && (
+        <div onClick={() => setMenuOpen(false)}
+          className="md:hidden absolute left-0 right-0 top-full flex flex-col gap-3 p-4 z-40"
+          style={{ background: th.headerBg, backdropFilter: 'blur(20px)', borderBottom: `1px solid ${th.border}`, boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+          {actions}
+        </div>
+      )}
+    </header>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AdminDashboardClient({ locale, dict, role, storeName }: { locale: Locale; dict: Dictionary; role: 'master' | 'store'; storeName: string }) {
@@ -246,6 +351,7 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
   const [loadingList,  setLoadingList]  = useState(false);
   const [fetchError,   setFetchError]   = useState('');
   const [dark, setDark] = useState(false); // light default, matches server render; synced from localStorage below
+  const [menuOpen, setMenuOpen] = useState(false);
   const th = getTheme(dark);
 
   useEffect(() => {
@@ -365,82 +471,14 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
     <main className="min-h-screen" style={{ background: th.page, color: th.text }}>
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header
-        className="sticky top-0 z-40 px-4 sm:px-6 py-3.5 flex items-center gap-3 flex-wrap"
-        style={{ background: th.headerBg, backdropFilter: 'blur(20px)', borderBottom: `1px solid ${th.border}`, boxShadow: '0 4px 32px rgba(0,0,0,0.4)' }}
-      >
-        {/* Brand */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-white text-xs shadow" style={{ background: 'linear-gradient(135deg,#0d2a94,#072060)', boxShadow: '0 4px 16px rgba(13,42,148,0.4)' }}>J</div>
-          <div className="leading-none">
-            <div className="font-black text-white text-sm tracking-tight">JOTUN</div>
-            <div className="text-[9px] font-bold text-blue-400 tracking-[0.2em] uppercase">{t.brandSubtitle}</div>
-          </div>
-        </div>
-
-        <div className="ms-auto flex items-center gap-3">
-          {/* Role-aware nav: store files submissions, master manages accounts */}
-          {role === 'store' ? (
-            <Link href="/admin/submit"
-              className="text-xs font-semibold text-white px-3 py-1.5 rounded-lg transition-all active:scale-95"
-              style={{ background: 'linear-gradient(135deg,#0d2a94,#072060)' }}>
-              + Nouvelle soumission
-            </Link>
-          ) : (
-            <Link href="/admin/accounts"
-              className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors text-blue-400 hover:text-blue-300"
-              style={{ border: `1px solid ${th.border}` }}>
-              Comptes magasins
-            </Link>
-          )}
-          <span className="text-xs font-semibold hidden md:inline" style={{ color: th.muted }}>
-            {role === 'master' ? 'Maître' : storeName}
-          </span>
-          <ThemeToggle dark={dark} onToggle={() => setDark(d => !d)} dict={dict} />
-          <LanguageSwitcher locale={locale} dark={dark} />
-
-          {/* Export buttons */}
-          <div className="flex rounded-xl overflow-hidden" style={{ border: `1px solid ${th.border}` }}>
-            <button onClick={() => setExportFormat('csv')}
-              className="px-3 py-1.5 text-xs font-semibold transition-colors text-emerald-400 hover:text-emerald-300"
-              style={{ background: 'rgba(16,185,129,0.08)' }}>
-              CSV
-            </button>
-            <button onClick={() => setExportFormat('xlsx')}
-              className="px-3 py-1.5 text-xs font-semibold transition-colors text-blue-400 hover:text-blue-300"
-              style={{ background: 'rgba(59,130,246,0.08)', borderLeft: '1px solid rgba(255,255,255,0.06)' }}>
-              Excel
-            </button>
-            <button onClick={() => setExportFormat('pdf')}
-              className="px-3 py-1.5 text-xs font-semibold transition-colors text-blue-400 hover:text-blue-300"
-              style={{ background: 'rgba(13,42,148,0.08)', borderLeft: '1px solid rgba(255,255,255,0.06)' }}>
-              PDF
-            </button>
-          </div>
-
-          <Link href="/admin/change-password"
-            title="Changer le mot de passe"
-            className="flex items-center gap-1.5 text-xs hover:text-blue-400 transition-colors px-3 py-1.5 rounded-lg"
-            style={{ border: `1px solid ${th.border}`, color: th.muted }}>
-            <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M11 6a3 3 0 10-3 3M8 9v5M6 12h4"/>
-              <circle cx="11" cy="6" r="0.5" fill="currentColor"/>
-            </svg>
-            <span className="hidden sm:inline">Mot de passe</span>
-          </Link>
-
-          <button
-            onClick={logout}
-            className="flex items-center gap-1.5 text-xs hover:text-blue-400 transition-colors px-3 py-1.5 rounded-lg"
-            style={{ border: `1px solid ${th.border}`, color: th.muted }}
-          >
-            <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"/>
-            </svg>
-            <span className="hidden sm:inline">{t.logout}</span>
-          </button>
-        </div>
-      </header>
+      <Header
+        role={role} storeName={storeName} t={t} th={th} dark={dark}
+        locale={locale} dict={dict}
+        menuOpen={menuOpen} setMenuOpen={setMenuOpen}
+        onToggleDark={() => setDark(d => !d)}
+        onExport={setExportFormat}
+        onLogout={logout}
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
