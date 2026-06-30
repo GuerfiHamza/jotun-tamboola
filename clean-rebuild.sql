@@ -17,12 +17,12 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- ---------------------------------------------------------------------
 CREATE TABLE `accounts` (
 	`id` int AUTO_INCREMENT NOT NULL,
+	`nom_de_store` varchar(150) NOT NULL,
 	`store_name` varchar(150) NOT NULL,
-	`phone` varchar(30) NOT NULL,
 	`password` varchar(255) NOT NULL,
 	`role` enum('master','store') NOT NULL DEFAULT 'store',
 	`active` tinyint NOT NULL DEFAULT 1,
-	`must_change_password` tinyint NOT NULL DEFAULT 1,
+	`must_change_password` tinyint NOT NULL DEFAULT 0,
 	`created_at` timestamp DEFAULT (now()),
 	CONSTRAINT `accounts_id` PRIMARY KEY(`id`),
 	CONSTRAINT `accounts_store_name_unique` UNIQUE(`store_name`)
