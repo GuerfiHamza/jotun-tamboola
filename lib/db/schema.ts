@@ -40,6 +40,7 @@ export const invoices = mysqlTable('invoices', {
   perceptual_hash:  varchar('perceptual_hash', { length: 16 }),  // #7 64-bit dHash (hex)
   content_key:      varchar('content_key', { length: 255 }),     // #8 vendor|invoice_no|date|amount
   duplicate_flag:   tinyint('duplicate_flag').default(0).notNull(), // 1 = needs admin review (soft dup)
+  duplicate_of:     int('duplicate_of'),  // id of the invoice this one matched (perceptual/content); null unless duplicate_flag=1. ponytail: plain int, no FK — if the matched invoice is deleted the badge just links to nothing.
   status:           mysqlEnum('status', ['pending', 'accepted', 'rejected']).default('pending').notNull(),
   attempt:          int('attempt').default(1),
   uploaded_at:      timestamp('uploaded_at').defaultNow(),

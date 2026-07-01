@@ -28,6 +28,8 @@ type Invoice = {
   id: number; participant_id: number; filename: string; original_name: string;
   declared_amount: string | null; amount_detected: string | null; status: InvoiceStatus; uploaded_at: string;
   duplicate_flag?: number;
+  duplicate_of_participant_id?: number | null;  // matched submission (null if the match is outside your scope)
+  duplicate_of_name?: string | null;
 };
 
 type Submission = {
@@ -60,11 +62,12 @@ function StatusBadge({ s, dict }: { s: ParticipantStatus | InvoiceStatus; dict: 
 // ── Invoice card ──────────────────────────────────────────────────────────────
 
 function InvoiceCard({
-  inv, onAmountUpdate, onStatusChange, dict, th,
+  inv, onAmountUpdate, onStatusChange, onOpenDuplicate, dict, th,
 }: {
   inv: Invoice;
   onAmountUpdate: (id: number, amount: number) => void;
   onStatusChange: (id: number, status: 'accepted' | 'rejected') => void;
+  onOpenDuplicate: (participantId: number) => void;
   dict: Dictionary;
   th: Theme;
 }) {
@@ -113,13 +116,25 @@ function InvoiceCard({
         <span className="font-medium truncate max-w-32" style={{ color: th.sub }}>{inv.original_name}</span>
         <div className="flex items-center gap-1.5 shrink-0">
           {inv.duplicate_flag === 1 && (
-            <span
-              title={t.duplicateTooltip}
-              className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
-              style={{ background: 'rgba(249,115,22,0.18)', color: '#fdba74' }}
-            >
-              {t.duplicateBadge}
-            </span>
+            inv.duplicate_of_participant_id ? (
+              <button
+                type="button"
+                onClick={() => onOpenDuplicate(inv.duplicate_of_participant_id!)}
+                title={`${t.duplicateTooltip}${inv.duplicate_of_name ? ` — ${inv.duplicate_of_name}` : ''}`}
+                className="rounded-full px-2 py-0.5 text-[10px] font-semibold underline decoration-dotted cursor-pointer"
+                style={{ background: 'rgba(249,115,22,0.18)', color: '#fdba74' }}
+              >
+                {t.duplicateBadge}{inv.duplicate_of_name ? ` → ${inv.duplicate_of_name}` : ''}
+              </button>
+            ) : (
+              <span
+                title={t.duplicateTooltip}
+                className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                style={{ background: 'rgba(249,115,22,0.18)', color: '#fdba74' }}
+              >
+                {t.duplicateBadge}
+              </span>
+            )
           )}
           <StatusBadge s={inv.status} dict={dict} />
         </div>
@@ -830,6 +845,7 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
                                 setInvoices(prev => prev.map(i => i.id === id ? { ...i, amount_detected: String(newAmount) } : i));
                               }}
                               onStatusChange={setInvoiceStatus}
+                              onOpenDuplicate={openParticipant}
                             />
                           ))}
                         </div>

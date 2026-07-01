@@ -153,7 +153,7 @@ export async function POST(req: NextRequest) {
   if (pHash) {
     const pDup = await findPerceptualDuplicate(pHash, invoiceId);
     if (pDup) {
-      await db.update(invoices).set({ duplicate_flag: 1 }).where(eq(invoices.id, invoiceId));
+      await db.update(invoices).set({ duplicate_flag: 1, duplicate_of: pDup.id }).where(eq(invoices.id, invoiceId));
       console.log(`[invoice] perceptual duplicate flagged: invoice ${invoiceId} ~ ${pDup.id}`);
     }
   }
@@ -176,10 +176,12 @@ export async function POST(req: NextRequest) {
         amount: result.amount,
       });
       let flagDuplicate = false;
+      let dupOf: number | null = null;
       if (contentKey) {
         const cDup = await findContentKeyDuplicate(contentKey, invoiceId);
         if (cDup) {
           flagDuplicate = true;
+          dupOf = cDup.id;
           console.log(`[invoice] content-key duplicate flagged: invoice ${invoiceId} ~ ${cDup.id}`);
         }
       }
@@ -200,7 +202,7 @@ export async function POST(req: NextRequest) {
           amount_detected: result.amount !== null ? result.amount.toFixed(2) : null,
           gemini_response: result.raw.slice(0, 60_000),
           content_key: contentKey,
-          ...(flagDuplicate ? { duplicate_flag: 1 } : {}),
+          ...(flagDuplicate ? { duplicate_flag: 1, duplicate_of: dupOf } : {}),
           status: autoApprove ? 'accepted' : 'pending',
         })
         .where(eq(invoices.id, invoiceId));

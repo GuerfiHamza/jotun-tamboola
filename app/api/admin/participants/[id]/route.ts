@@ -53,7 +53,26 @@ export async function GET(
     .where(inArray(invoices.participant_id, submissionIds))
     .orderBy(desc(invoices.uploaded_at));
 
-  return NextResponse.json({ participant, invoices: participantInvoices, submissions });
+  // Resolve each flagged duplicate to the submission it matched, so the UI can
+  // name/link it. The match may belong to any participant (that's the point of
+  // cross-submission dedup); the master sees all, a store only reaches its own.
+  const dupIds = [...new Set(participantInvoices.map(i => i.duplicate_of).filter((x): x is number => !!x))];
+  const dupMap = new Map<number, { participant_id: number; name: string }>();
+  if (dupIds.length > 0) {
+    const rows = await db
+      .select({ invId: invoices.id, pid: participants.id, name: participants.full_name })
+      .from(invoices)
+      .innerJoin(participants, eq(participants.id, invoices.participant_id))
+      .where(inArray(invoices.id, dupIds));
+    for (const r of rows) dupMap.set(r.invId, { participant_id: r.pid, name: r.name });
+  }
+  const enriched = participantInvoices.map(i => ({
+    ...i,
+    duplicate_of_participant_id: i.duplicate_of ? dupMap.get(i.duplicate_of)?.participant_id ?? null : null,
+    duplicate_of_name: i.duplicate_of ? dupMap.get(i.duplicate_of)?.name ?? null : null,
+  }));
+
+  return NextResponse.json({ participant, invoices: enriched, submissions });
 }
 
 export async function PATCH(
