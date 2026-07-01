@@ -47,6 +47,7 @@ export default function SubmitClient({ locale, dict, storeName }: { locale: Loca
     setError('');
     if (!form.commercial_nom.trim() || !form.commercial_prenom.trim()) { setError('Nom et prénom du commercial sont requis.'); return; }
     if (!form.nom.trim() || !form.prenom.trim() || !form.phone.trim()) { setError('Nom, prénom et téléphone du client sont requis.'); return; }
+    if (!form.montant.trim() || Number(form.montant) <= 0) { setError('Le montant de la facture est requis.'); return; }
     if (!form.consent) { setError('Veuillez accepter les conditions de participation.'); return; }
     if (!form.invoice) { setError('La facture est requise.'); return; }
     if (form.invoice.size > MAX_BYTES) {
@@ -162,7 +163,7 @@ export default function SubmitClient({ locale, dict, storeName }: { locale: Loca
                 </div>
               </div>
 
-              <Input label="Montant de la facture (DA)" value={form.montant}
+              <Input label="Montant de la facture (DA) *" value={form.montant}
                 onChange={v => set('montant', v.replace(/[^\d.]/g, ''))} placeholder="15000" th={th} type="text" />
             </section>
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/index';
-import { participants, invoices } from '@/lib/db/schema';
+import { participants, invoices, accounts } from '@/lib/db/schema';
 import { eq, desc, and, inArray } from 'drizzle-orm';
 import { getAdminFromRequest } from '@/lib/adminAuth';
 import { ownsParticipant, participantScope } from '@/lib/scope';
@@ -38,9 +38,10 @@ export async function GET(
   // this account so a store never sees another store's same-phone submissions.
   const scope = participantScope(acc);
   const submissions = await db
-    .select({ id: participants.id, status: participants.status, created_at: participants.created_at, wilaya: participants.wilaya,
+    .select({ id: participants.id, status: participants.status, created_at: participants.created_at, wilaya: accounts.nom_de_store,
               commercial_nom: participants.commercial_nom, commercial_prenom: participants.commercial_prenom })
     .from(participants)
+    .innerJoin(accounts, eq(accounts.id, participants.account_id))
     .where(scope ? and(eq(participants.phone, participant.phone), scope) : eq(participants.phone, participant.phone))
     .orderBy(desc(participants.created_at));
 

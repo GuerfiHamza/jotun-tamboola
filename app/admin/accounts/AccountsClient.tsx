@@ -127,7 +127,7 @@ export default function AccountsClient({ locale }: { locale: Locale; dict: Dicti
         </button>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${th.border}` }}>
           <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[480px]">

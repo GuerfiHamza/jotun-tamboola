@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/index';
-import { participants, invoices } from '@/lib/db/schema';
+import { participants, invoices, accounts } from '@/lib/db/schema';
 import { eq, like, or, count, max, desc, and, sql, inArray, SQL } from 'drizzle-orm';
 import { getAdminFromRequest } from '@/lib/adminAuth';
 import { participantScope } from '@/lib/scope';
@@ -65,15 +65,17 @@ export async function GET(req: NextRequest) {
   // (name / wilaya / painter flag / status shown in the table).
   const phones = groups.map(g => g.phone);
   const latestByPhone = new Map<string, typeof participants.$inferSelect>();
+  const nomByPhone = new Map<string, string>(); // display name of the submitting store (nom_de_store)
   const allByPhone = new Map<string, (typeof participants.$inferSelect)[]>();
   if (phones.length > 0) {
     const reps = await db
-      .select()
+      .select({ p: participants, nom_de_store: accounts.nom_de_store })
       .from(participants)
+      .innerJoin(accounts, eq(accounts.id, participants.account_id))
       .where(scope ? and(inArray(participants.phone, phones), scope) : inArray(participants.phone, phones))
       .orderBy(desc(participants.created_at));
-    for (const r of reps) {
-      if (!latestByPhone.has(r.phone)) latestByPhone.set(r.phone, r);
+    for (const { p: r, nom_de_store } of reps) {
+      if (!latestByPhone.has(r.phone)) { latestByPhone.set(r.phone, r); nomByPhone.set(r.phone, nom_de_store); }
       allByPhone.set(r.phone, [...(allByPhone.get(r.phone) ?? []), r]);
     }
   }
@@ -93,7 +95,7 @@ export async function GET(req: NextRequest) {
       id:                rep.id,
       full_name:         rep.full_name,
       phone:             g.phone,
-      wilaya:            rep.wilaya,
+      wilaya:            nomByPhone.get(g.phone) ?? rep.wilaya,
       is_painter:        rep.is_painter,
       status:            groupStatus(g.phone),
       created_at:        rep.created_at,
