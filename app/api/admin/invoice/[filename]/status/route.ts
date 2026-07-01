@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import { checkCsrf } from '@/lib/csrf';
 import { getAdminFromRequest } from '@/lib/adminAuth';
 import { ownsInvoice } from '@/lib/scope';
+import { logAction } from '@/lib/audit';
 
 type InvoiceStatus = 'accepted' | 'rejected';
 
@@ -47,5 +48,6 @@ export async function PATCH(
       .where(eq(participants.id, invoice.participant_id));
   }
 
+  await logAction(acc, 'invoice.status', `facture #${invoiceId} → ${status}`);
   return NextResponse.json({ success: true });
 }

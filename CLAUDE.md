@@ -30,7 +30,7 @@ Two roles: **`master`** (sees/acts on everything) and **`store`** (scoped to its
 2. Route handlers — `getAdminFromRequest()` (`lib/adminAuth.ts` → `lib/auth.ts`).
 3. Ownership — `lib/scope.ts` (`participantScope`, `ownsParticipant`, `ownsInvoice`, `ownsInvoiceFile`). **Any store-facing query/mutation must be scoped through these**, never trust an id from the client.
 
-New store accounts get a readable temp password (`generateTempPassword`) and `must_change_password=1`, which forces `/admin/change-password` before they can submit.
+The master sets each account's password directly in the create form (and picks its role, `store` or `master`); stores use it as-is — there is no forced or self-service change for stores (`must_change_password` stays 0). The master can still change its own password via `/admin/change-password`. Password resets generate a one-time temp password shown to the master.
 
 ### Data model (`lib/db/schema.ts`)
 `accounts` (`store_name` doubles as the login username) → `participants` (FK `account_id`, cascade) → `invoices` (FK `participant_id`, cascade). Use the inferred Drizzle types exported at the bottom of the schema. **Two DB modules exist**: `lib/db/index.ts` is the Drizzle client — **use this**; `lib/db.ts` is an unused raw mysql2 pool.
@@ -38,7 +38,7 @@ New store accounts get a readable temp password (`generateTempPassword`) and `mu
 ### Invoice pipeline
 `/admin/submit` → `POST /api/register` (creates a participant) → `POST /api/upload-invoice`: validates MIME with `file-type` + 10 MB cap, writes the file to `private_uploads/` (never public), runs dedup, then analyzes the amount with Gemini in a **background task** (`after()` from `next/server`) so the response returns fast. Stored files are served only through the authorized `/api/admin/invoice/[filename]` route.
 
-**Invariant: never auto-approve.** Detected amounts are recorded but `status` stays `pending` until an admin decides — true for first upload, retries, and re-analysis alike.
+**Auto-approve rule.** The commercial may declare a `montant` (invoice `declared_amount`) on upload. In the background analysis, if the AI reads the same amount (rounded to whole DA) the invoice auto-approves (invoice `accepted`, participant `approved`). If the AI can't read the amount, or it differs, `status` stays `pending` for the master. This deliberately relaxes the old never-auto-approve invariant, so it is gated on an exact AI match; a Gemini-read amount alone (no matching declared montant) still never auto-approves. Retries/re-analysis without a declared montant stay `pending`.
 
 ### Dedup (`lib/dedup.ts`) — three independent layers
 - `exactHash` (SHA-256 of raw bytes): hard reject if a *different* participant already submitted it; benign retry if the *same* participant.

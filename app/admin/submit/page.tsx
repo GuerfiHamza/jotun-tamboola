@@ -14,7 +14,6 @@ export default async function Page() {
   const me = await db.query.accounts.findFirst({ where: eq(accounts.id, acc.accountId) });
   if (!me) redirect('/admin/login');
   if (me.role !== 'store') redirect('/admin'); // master manages, doesn't submit
-  if (me.must_change_password) redirect('/admin/change-password');
 
   const locale = await getLocale();
   const dict = await getDictionary(locale);

@@ -3,6 +3,7 @@ import type { Theme } from '@/lib/adminTheme';
 
 export type Submission = {
   id: number; full_name: string; phone: string; wilaya: string; is_painter: number;
+  commercial_nom?: string | null; commercial_prenom?: string | null;
   status: 'pending' | 'approved' | 'rejected'; created_at: string;
   invoice_count: number; accepted_count: number;
 };
@@ -28,6 +29,11 @@ export function SubmissionsList({ rows, loading, th, onStatusChange, busyId }: {
             className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-xs"
             style={{ borderTop: i === 0 ? 'none' : `1px solid ${th.borderSub}`, background: th.panel }}>
             <span className="font-semibold" style={{ color: th.text }}>{s.full_name}</span>
+            {(s.commercial_prenom || s.commercial_nom) && (
+              <span title="Commercial" style={{ color: '#a78bfa' }}>
+                👤 {[s.commercial_prenom, s.commercial_nom].filter(Boolean).join(' ')}
+              </span>
+            )}
             <span style={{ color: th.sub }}>{s.phone}</span>
             <span style={{ color: th.muted }}>{s.wilaya}</span>
             <span className="px-2 py-0.5 rounded-full font-bold uppercase text-[10px]" style={{ background: st.bg, color: st.color }}>{st.label}</span>

@@ -5,6 +5,7 @@ import { and, eq, ne } from 'drizzle-orm';
 import { getAdminFromRequest } from '@/lib/adminAuth';
 import { checkCsrf } from '@/lib/csrf';
 import { hashPassword, generateTempPassword } from '@/lib/auth';
+import { logAction } from '@/lib/audit';
 
 function parseId(raw: string): number | null {
   const id = Number(raw);
@@ -44,18 +45,20 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
   if (body.active !== undefined) set.active = body.active ? 1 : 0;
 
-  // Master resets to a fresh temp password; the store must change it again.
+  // Master resets to a fresh temp password shown once; the store uses it as-is
+  // (no self-service change), so must_change_password stays 0.
   let newPassword: string | undefined;
   if (body.regenerate_password) {
     newPassword = generateTempPassword();
     set.password = await hashPassword(newPassword);
-    set.must_change_password = 1;
+    set.must_change_password = 0;
   }
 
   if (Object.keys(set).length === 0)
     return NextResponse.json({ error: 'Rien à mettre à jour.' }, { status: 400 });
 
   await db.update(accounts).set(set).where(eq(accounts.id, id));
+  await logAction(acc, 'account.update', `compte #${id}${newPassword ? ' (mot de passe réinitialisé)' : ''}`);
   return NextResponse.json({ success: true, ...(newPassword ? { password: newPassword } : {}) });
 }
 
@@ -77,5 +80,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     return NextResponse.json({ error: 'Le compte maître ne peut pas être supprimé.' }, { status: 403 });
 
   await db.delete(accounts).where(eq(accounts.id, id));
+  await logAction(acc, 'account.delete', `compte « ${target.store_name} » (#${id}) supprimé`);
   return NextResponse.json({ success: true });
 }

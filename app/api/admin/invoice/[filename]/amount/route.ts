@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import { checkCsrf } from '@/lib/csrf';
 import { getAdminFromRequest } from '@/lib/adminAuth';
 import { ownsInvoice } from '@/lib/scope';
+import { logAction } from '@/lib/audit';
 
 const MAX_AMOUNT = 100_000_000; // sanity cap
 
@@ -53,5 +54,6 @@ export async function PATCH(
       .where(eq(participants.id, invoice.participant_id));
   }
 
+  await logAction(admin, 'invoice.amount', `facture #${invoiceId}: montant ${amount} → ${accepted ? 'accepted' : 'rejected'}`);
   return NextResponse.json({ success: true, accepted });
 }

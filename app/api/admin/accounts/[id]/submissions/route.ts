@@ -16,9 +16,11 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
   const submissions = await db
     .select({
-      id:             participants.id,
-      full_name:      participants.full_name,
-      phone:          participants.phone,
+      id:                participants.id,
+      full_name:         participants.full_name,
+      commercial_nom:    participants.commercial_nom,
+      commercial_prenom: participants.commercial_prenom,
+      phone:             participants.phone,
       wilaya:         participants.wilaya,
       is_painter:     participants.is_painter,
       status:         participants.status,

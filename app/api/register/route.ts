@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import { checkCsrf } from '@/lib/csrf';
 import { checkRateLimit } from '@/lib/rateLimit';
 import { getAdminFromRequest } from '@/lib/adminAuth';
+import { logAction } from '@/lib/audit';
 
 // Algerian mobile/landline: 0 + 9 digits (05/06/07 mobile, 02/03/04 landline)
 const PHONE_RE = /^0[2-7]\d{8}$/;
@@ -37,25 +38,26 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const store = await db.query.accounts.findFirst({ where: eq(accounts.id, acc.accountId) });
   if (!store) return NextResponse.json({ error: 'Compte introuvable.' }, { status: 401 });
-  if (store.must_change_password)
-    return NextResponse.json({ error: 'Veuillez d’abord changer votre mot de passe.' }, { status: 403 });
 
-  let body: { nom?: unknown; prenom?: unknown; phone?: unknown; is_painter?: unknown };
+  let body: { commercial_nom?: unknown; commercial_prenom?: unknown; nom?: unknown; prenom?: unknown; phone?: unknown; is_painter?: unknown };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Corps de requête invalide.' }, { status: 400 });
   }
 
+  const commercial_nom    = typeof body.commercial_nom    === 'string' ? body.commercial_nom.trim()    : '';
+  const commercial_prenom = typeof body.commercial_prenom === 'string' ? body.commercial_prenom.trim() : '';
   const nom    = typeof body.nom    === 'string' ? body.nom.trim()    : '';
   const prenom = typeof body.prenom === 'string' ? body.prenom.trim() : '';
   const phone  = typeof body.phone  === 'string' ? normalizePhone(body.phone) : '';
   const full_name = `${prenom} ${nom}`.trim();
 
-  if (!nom || !prenom || !phone) {
+  if (!commercial_nom || !commercial_prenom || !nom || !prenom || !phone) {
     return NextResponse.json({ error: 'Tous les champs obligatoires doivent être remplis.' }, { status: 400 });
   }
-  if (nom.length < 2 || nom.length > 100 || prenom.length < 2 || prenom.length > 100) {
+  const in2to100 = (s: string) => s.length >= 2 && s.length <= 100;
+  if (![commercial_nom, commercial_prenom, nom, prenom].every(in2to100)) {
     return NextResponse.json({ error: 'Nom ou prénom invalide (2 à 100 caractères).' }, { status: 400 });
   }
   if (!PHONE_RE.test(phone)) {
@@ -68,6 +70,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       .values({
         account_id: store.id,
         full_name,
+        commercial_nom,
+        commercial_prenom,
         nom,
         prenom,
         phone,
@@ -78,6 +82,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       })
       .$returningId();
 
+    await logAction(acc, 'submission.create', `client ${full_name} (${phone}) par ${commercial_prenom} ${commercial_nom}`);
     return NextResponse.json({ success: true, participantId: inserted.id, requiresInvoice: true });
   } catch {
     return NextResponse.json({ error: 'Erreur serveur. Réessayez.' }, { status: 500 });

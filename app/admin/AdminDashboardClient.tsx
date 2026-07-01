@@ -26,11 +26,14 @@ type Participant = {
 
 type Invoice = {
   id: number; participant_id: number; filename: string; original_name: string;
-  amount_detected: string | null; status: InvoiceStatus; uploaded_at: string;
+  declared_amount: string | null; amount_detected: string | null; status: InvoiceStatus; uploaded_at: string;
   duplicate_flag?: number;
 };
 
-type Submission = { id: number; status: ParticipantStatus; created_at: string; wilaya: string };
+type Submission = {
+  id: number; status: ParticipantStatus; created_at: string; wilaya: string;
+  commercial_nom?: string | null; commercial_prenom?: string | null;
+};
 
 
 // ── Status badge ──────────────────────────────────────────────────────────────
@@ -177,6 +180,18 @@ function InvoiceCard({
         {error && <span className="text-red-400 w-full">{error}</span>}
       </div>
 
+      {inv.declared_amount != null && (
+        <div className="flex items-center gap-1.5">
+          <span style={{ color: th.muted }}>Déclaré :</span>
+          <span className="font-bold" style={{ color: th.sub }}>{Number(inv.declared_amount).toLocaleString('fr-DZ')} DA</span>
+          {inv.amount_detected != null && (
+            Math.round(Number(inv.declared_amount)) === Math.round(Number(inv.amount_detected))
+              ? <span className="text-emerald-400 font-semibold">✓ correspond à l’IA</span>
+              : <span className="text-amber-400 font-semibold">≠ IA</span>
+          )}
+        </div>
+      )}
+
       <div style={{ color: th.faint }}>{new Date(inv.uploaded_at).toLocaleString('fr-DZ')}</div>
 
       {inv.status !== 'accepted' && (
@@ -246,11 +261,18 @@ function Header({
           + Nouvelle soumission
         </Link>
       ) : (
-        <Link href="/admin/accounts"
-          className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors text-blue-400 hover:text-blue-300 text-center"
-          style={{ border: `1px solid ${th.border}` }}>
-          Comptes magasins
-        </Link>
+        <>
+          <Link href="/admin/accounts"
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors text-blue-400 hover:text-blue-300 text-center"
+            style={{ border: `1px solid ${th.border}` }}>
+            Comptes magasins
+          </Link>
+          <Link href="/admin/logs"
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors text-center"
+            style={{ border: `1px solid ${th.border}`, color: th.muted }}>
+            Journal
+          </Link>
+        </>
       )}
 
       {/* Export buttons */}
@@ -765,6 +787,11 @@ export default function AdminDashboardClient({ locale, dict, role, storeName }: 
                         </span>
                         <StatusBadge s={sub.status} dict={dict} />
                       </div>
+                      {(sub.commercial_prenom || sub.commercial_nom) && (
+                        <div className="text-xs mb-2" style={{ color: '#a78bfa' }}>
+                          👤 Commercial : {[sub.commercial_prenom, sub.commercial_nom].filter(Boolean).join(' ')}
+                        </div>
+                      )}
                       <div className="flex gap-2 mb-2.5">
                         <button
                           onClick={() => updateStatus(sub.id, 'approved')}

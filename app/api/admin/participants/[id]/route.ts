@@ -5,6 +5,7 @@ import { eq, desc, and, inArray } from 'drizzle-orm';
 import { getAdminFromRequest } from '@/lib/adminAuth';
 import { ownsParticipant, participantScope } from '@/lib/scope';
 import { checkCsrf } from '@/lib/csrf';
+import { logAction } from '@/lib/audit';
 
 type Status = 'pending' | 'approved' | 'rejected';
 
@@ -37,7 +38,8 @@ export async function GET(
   // this account so a store never sees another store's same-phone submissions.
   const scope = participantScope(acc);
   const submissions = await db
-    .select({ id: participants.id, status: participants.status, created_at: participants.created_at, wilaya: participants.wilaya })
+    .select({ id: participants.id, status: participants.status, created_at: participants.created_at, wilaya: participants.wilaya,
+              commercial_nom: participants.commercial_nom, commercial_prenom: participants.commercial_prenom })
     .from(participants)
     .where(scope ? and(eq(participants.phone, participant.phone), scope) : eq(participants.phone, participant.phone))
     .orderBy(desc(participants.created_at));
@@ -99,6 +101,7 @@ export async function PATCH(
       .where(eq(invoices.participant_id, id));
   }
 
+  await logAction(acc, 'submission.status', `soumission #${id} → ${newStatus}`);
   return NextResponse.json({ success: true });
 }
 
@@ -123,5 +126,6 @@ export async function DELETE(
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
   await db.delete(participants).where(eq(participants.id, id));
+  await logAction(acc, 'submission.delete', `soumission #${id} supprimée`);
   return NextResponse.json({ success: true });
 }

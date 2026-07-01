@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import { db } from '@/lib/db/index';
-import { participants, invoices, accounts } from '@/lib/db/schema';
+import { participants, invoices } from '@/lib/db/schema';
 import { eq, count } from 'drizzle-orm';
 import { checkCsrf } from '@/lib/csrf';
 import { checkRateLimit } from '@/lib/rateLimit';
 import { getAdminFromRequest } from '@/lib/adminAuth';
+import { logAction } from '@/lib/audit';
 import { analyzeInvoice } from '@/lib/gemini';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
@@ -21,6 +22,7 @@ import {
 
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 const MAX_BYTES = 10 * 1024 * 1024;
+const MAX_AMOUNT = 100_000_000; // sanity cap on a declared montant (matches the admin amount route)
 const MAX_ATTEMPTS = 3;
 const UPLOAD_DIR = join(process.cwd(), 'private_uploads');
 
@@ -29,10 +31,6 @@ export async function POST(req: NextRequest) {
   if (!acc) return NextResponse.json({ error: 'Non autorisé.' }, { status: 401 });
   if (acc.role !== 'store')
     return NextResponse.json({ error: 'Seuls les comptes magasin peuvent soumettre.' }, { status: 403 });
-
-  const [me] = await db.select({ must: accounts.must_change_password }).from(accounts).where(eq(accounts.id, acc.accountId)).limit(1);
-  if (me?.must)
-    return NextResponse.json({ error: 'Veuillez d’abord changer votre mot de passe.' }, { status: 403 });
 
   const csrfError = checkCsrf(req);
   if (csrfError) return csrfError;
@@ -50,6 +48,19 @@ export async function POST(req: NextRequest) {
 
   const participantIdRaw = formData.get('participantId');
   const file = formData.get('invoice');
+
+  // Optional montant the commercial declares for this invoice. If it matches the
+  // AI-read amount (rounded to whole DA) the invoice auto-approves in the
+  // background; otherwise it stays pending for the master.
+  const montantRaw = formData.get('montant');
+  let declaredAmount: number | null = null;
+  if (typeof montantRaw === 'string' && montantRaw.trim() !== '') {
+    const n = Number(montantRaw);
+    if (!Number.isFinite(n) || n < 0 || n > MAX_AMOUNT) {
+      return NextResponse.json({ error: 'Montant invalide.' }, { status: 400 });
+    }
+    declaredAmount = n;
+  }
 
   // This upload attaches to a participant the store created via /api/register;
   // ownership is enforced below.
@@ -126,6 +137,7 @@ export async function POST(req: NextRequest) {
     participant_id: participantId,
     filename,
     original_name: file.name.slice(0, 255),
+    declared_amount: declaredAmount !== null ? declaredAmount.toFixed(2) : null,
     amount_detected: null,
     gemini_response: 'analyzing',
     file_hash: fileHash,
@@ -172,21 +184,36 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // SECURITY: the attacker fully controls the uploaded image, so a
-      // Gemini-read amount must NEVER auto-approve. We only record the
-      // detected amount for the admin; status stays 'pending' for manual
-      // review. Approval happens solely via the admin amount route.
+      // Auto-approve rule (per product decision): the commercial declares a
+      // montant; if the AI reads the SAME amount (rounded to whole DA) we
+      // auto-approve. If the AI can't read the amount, or it differs, the
+      // invoice stays 'pending' for the master. Note: this trusts the store's
+      // declared montant as a second signal — it deliberately relaxes the old
+      // "never auto-approve" invariant, so keep it gated on an exact AI match.
+      const autoApprove =
+        declaredAmount !== null &&
+        result.amount !== null &&
+        Math.round(result.amount) === Math.round(declaredAmount);
+
       await db.update(invoices)
         .set({
           amount_detected: result.amount !== null ? result.amount.toFixed(2) : null,
           gemini_response: result.raw.slice(0, 60_000),
           content_key: contentKey,
           ...(flagDuplicate ? { duplicate_flag: 1 } : {}),
-          status: 'pending',
+          status: autoApprove ? 'accepted' : 'pending',
         })
         .where(eq(invoices.id, invoiceId));
 
-      console.log(`[invoice] background analysis done for invoice ${invoiceId}: amount=${result.amount} (pending admin review)`);
+      if (autoApprove) {
+        await db.update(participants)
+          .set({ status: 'approved', updated_at: new Date() })
+          .where(eq(participants.id, participantId));
+        await logAction(null, 'invoice.auto_approve', `facture #${invoiceId}: montant déclaré ${declaredAmount} = IA ${result.amount}`);
+        console.log(`[invoice] auto-approved invoice ${invoiceId}: declared=${declaredAmount} == ai=${result.amount}`);
+      } else {
+        console.log(`[invoice] background analysis done for invoice ${invoiceId}: declared=${declaredAmount} ai=${result.amount} (pending admin review)`);
+      }
     } catch (e) {
       console.error(`[invoice] background analysis failed for invoice ${invoiceId}:`, e);
       await db.update(invoices)
