@@ -71,17 +71,30 @@ export default function SubmitClient({ locale, dict, storeName }: { locale: Loca
       });
       const regData = await reg.json() as { error?: string; participantId?: number };
       if (!reg.ok || !regData.participantId) { setError(regData.error ?? 'Erreur lors de l’enregistrement.'); return; }
+      const participantId = regData.participantId;
+
+      // The participant already exists at this point. If the invoice upload
+      // fails for any reason, roll it back so we don't leave an empty submission.
+      const fail = async (msg: string) => {
+        await fetch(`/api/admin/participants/${participantId}`, { method: 'DELETE', headers: { 'x-requested-with': 'XMLHttpRequest' } }).catch(() => {});
+        setError(msg);
+      };
 
       const fd = new FormData();
       fd.append('invoice', form.invoice);
-      fd.append('participantId', String(regData.participantId));
+      fd.append('participantId', String(participantId));
       if (form.montant.trim()) fd.append('montant', form.montant.trim());
-      const up = await fetch('/api/upload-invoice', { method: 'POST', headers: { 'x-requested-with': 'XMLHttpRequest' }, body: fd });
+
+      let up: Response;
+      try {
+        up = await fetch('/api/upload-invoice', { method: 'POST', headers: { 'x-requested-with': 'XMLHttpRequest' }, body: fd });
+      } catch { await fail('Erreur réseau lors de l’envoi de la facture. Réessayez.'); return; }
+
       // A 413 from the platform/proxy returns HTML, not JSON — handle it explicitly
       // so it isn't swallowed as a generic network error.
-      if (up.status === 413) { setError('Facture trop volumineuse (max 10 Mo). Compressez l’image ou reprenez la photo.'); return; }
+      if (up.status === 413) { await fail('Facture trop volumineuse (max 10 Mo). Compressez l’image ou reprenez la photo.'); return; }
       const upData = await up.json().catch(() => ({})) as { error?: string; message?: string };
-      if (!up.ok) { setError(upData.error ?? 'Erreur lors de l’envoi de la facture.'); return; }
+      if (!up.ok) { await fail(upData.error ?? 'Erreur lors de l’envoi de la facture.'); return; }
 
       setDone(upData.message ?? 'Soumission reçue.');
       setForm(EMPTY);
