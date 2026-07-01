@@ -42,6 +42,10 @@ export default function SubmitClient({ locale, dict, storeName }: { locale: Loca
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm(f => ({ ...f, [k]: v }));
 
+  // Live size feedback: green when a picked file fits, red when it's over the cap.
+  const oversize = !!form.invoice && form.invoice.size > MAX_BYTES;
+  const sizeMo = form.invoice ? (form.invoice.size / 1024 / 1024).toFixed(1) : null;
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
@@ -170,11 +174,19 @@ export default function SubmitClient({ locale, dict, storeName }: { locale: Loca
             {/* Facture + photo tips */}
             <section className="space-y-3">
               <label className="flex flex-col items-center justify-center gap-2 w-full border-2 border-dashed rounded-xl px-4 py-7 cursor-pointer"
-                style={{ borderColor: form.invoice ? 'rgba(16,185,129,0.4)' : th.border, background: form.invoice ? 'rgba(16,185,129,0.04)' : th.input }}>
+                style={{
+                  borderColor: oversize ? 'rgba(239,68,68,0.5)' : form.invoice ? 'rgba(16,185,129,0.4)' : th.border,
+                  background: oversize ? 'rgba(239,68,68,0.05)' : form.invoice ? 'rgba(16,185,129,0.04)' : th.input,
+                }}>
                 <input type="file" accept="image/*,application/pdf" className="hidden" onChange={e => set('invoice', e.target.files?.[0] ?? null)} />
-                <span className="text-sm font-semibold" style={{ color: form.invoice ? '#34d399' : th.muted }}>
+                <span className="text-sm font-semibold text-center break-all" style={{ color: oversize ? '#f87171' : form.invoice ? '#34d399' : th.muted }}>
                   {form.invoice ? form.invoice.name : `${t.invoice.label} *`}
                 </span>
+                {sizeMo && (
+                  <span className="text-xs font-bold" style={{ color: oversize ? '#f87171' : '#34d399' }}>
+                    {sizeMo} Mo{oversize ? ' — trop volumineux (max 10 Mo)' : ' ✓'}
+                  </span>
+                )}
                 <span className="text-xs" style={{ color: th.faint }}>{form.invoice ? t.invoice.changeHint : t.invoice.dropHint}</span>
               </label>
 
@@ -199,7 +211,7 @@ export default function SubmitClient({ locale, dict, storeName }: { locale: Loca
               </span>
             </label>
 
-            <button type="submit" disabled={loading || !form.consent}
+            <button type="submit" disabled={loading || !form.consent || oversize}
               className="w-full font-bold text-sm text-white rounded-xl py-3.5 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ background: 'linear-gradient(135deg,#0d2a94,#072060)' }}>
               {loading ? 'Envoi…' : 'Soumettre'}
